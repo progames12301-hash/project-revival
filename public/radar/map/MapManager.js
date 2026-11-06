@@ -502,16 +502,17 @@ function stableRadarId(value){let hash=2166136261;for(const character of String(
 
 export class MapManager{
   constructor(container,onStyleReady){
-    registerRadarScopeProtocol();registerWxToolsProtocol();this.theme='light';this.radarLayers=[];this.radarPool=new Set();this.pendingRadarLayers=new Set();this.radarLayerOptions=new Map();this.v5PolarLayers=new Map();this.radarTransition=0;this.styleName='normal';this.opacity=.8;this.radarScopeMode=false;this.radarScopeProfile='scope';this.radarScopeOrigin=CONFIG.center.slice();this.onStyleReady=onStyleReady;this.stormTrackData=null;this.stormTrackPicker=null;this.radarPicker=null;this.radarCatalog=[];this.boundaries={states:null,municipalities:null};this.boundaryVisible={states:true,municipalities:false};this.boundaryLoading={states:null,municipalities:null};
+    registerRadarScopeProtocol();registerWxToolsProtocol();this.theme='light';this.radarLayers=[];this.radarPool=new Set();this.pendingRadarLayers=new Set();this.radarLayerOptions=new Map();this.v5PolarLayers=new Map();this.radarTransition=0;this.styleName='normal';this.opacity=.8;this.radarScopeMode=false;this.radarScopeProfile='scope';this.radarScopeOrigin=CONFIG.center.slice();this.onStyleReady=onStyleReady;this.stormTrackData=null;this.stormTrackPicker=null;this.radarPicker=null;this.radarCatalog=[];this.boundaries={states:null,municipalities:null};this.boundaryVisible={states:true,municipalities:false};this.boundaryLoading={states:null,municipalities:null};this.inmetAlerts=[];this.inmetAlertsVisible=true;this.radarProbeHandler=null;this.inmetPopup=null;this.radarProbePopup=null;
     this.map=new maplibregl.Map({container,style:this.baseStyle(this.theme),center:CONFIG.center,zoom:3.6,pitch:0,bearing:0,maxPitch:70,renderWorldCopies:false,attributionControl:true,dragRotate:true,pitchWithRotate:true,touchPitch:true,preserveDrawingBuffer:true,canvasContextAttributes:{preserveDrawingBuffer:true}});
     this.map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
     this.map.addControl(new maplibregl.ScaleControl({unit:'metric'}),'bottom-right');
     this.setDisplayQuality('extreme');
     this.ready=new Promise(resolve=>this.map.once('load',resolve));
     this.satelliteTiles=null;this.satelliteCanvas=null;
-    this.map.on('style.load',()=>{void this.restoreBoundaryLayers();this.restoreSatelliteTiles();if(this.radarCatalog.length)this.setRadarMarkers(this.radarCatalog);if(this.stormTrackData)this.drawStormTrack();if(this.onStyleReady)requestAnimationFrame(()=>this.onStyleReady())});
-    this.map.on('click',event=>{const radar=this.map.getLayer('radar-centers')?this.map.queryRenderedFeatures(event.point,{layers:['radar-centers']})[0]:null;if(radar&&this.radarPicker){this.radarPicker(radar.properties);return}if(this.stormTrackPicker)this.stormTrackPicker({lng:event.lngLat.lng,lat:event.lngLat.lat})});
-    this.map.on('mousemove',event=>{const overRadar=this.map.getLayer('radar-centers')&&this.map.queryRenderedFeatures(event.point,{layers:['radar-centers']}).length;this.map.getCanvas().style.cursor=overRadar?'pointer':this.stormTrackPicker?'crosshair':''});
+    this.map.on('style.load',()=>{void this.restoreBoundaryLayers();this.restoreSatelliteTiles();if(this.radarCatalog.length)this.setRadarMarkers(this.radarCatalog);if(this.stormTrackData)this.drawStormTrack();this.drawInmetAlerts();if(this.onStyleReady)requestAnimationFrame(()=>this.onStyleReady())});
+    this.map.on('click',event=>{const alertLayers=['inmet-alerts-fill','inmet-alerts-line'].filter(id=>this.map.getLayer(id));const alert=alertLayers.length?this.map.queryRenderedFeatures(event.point,{layers:alertLayers})[0]:null;if(alert){this.showInmetAlertPopup(alert,event.lngLat);return}const radar=this.map.getLayer('radar-centers')?this.map.queryRenderedFeatures(event.point,{layers:['radar-centers']})[0]:null;if(radar&&this.radarPicker){this.radarPicker(radar.properties);return}if(this.stormTrackPicker)this.stormTrackPicker({lng:event.lngLat.lng,lat:event.lngLat.lat})});
+    this.map.on('dblclick',event=>{if(!this.radarProbeHandler)return;event.preventDefault();this.radarProbeHandler({lng:event.lngLat.lng,lat:event.lngLat.lat,point:event.point})});
+    this.map.on('mousemove',event=>{const overRadar=this.map.getLayer('radar-centers')&&this.map.queryRenderedFeatures(event.point,{layers:['radar-centers']}).length;const alertLayers=['inmet-alerts-fill','inmet-alerts-line'].filter(id=>this.map.getLayer(id));const overAlert=alertLayers.length&&this.map.queryRenderedFeatures(event.point,{layers:alertLayers}).length;this.map.getCanvas().style.cursor=overRadar||overAlert?'pointer':this.stormTrackPicker?'crosshair':''});
   }
   radarScopeBufferUrl(buffer,{imageOrigin=[.5,.5],profile='super',palette=null}={}){
     const id=`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -666,7 +667,7 @@ export class MapManager{
     this.map.addLayer({id:source,type:'line',source,layout:{visibility:this.boundaryVisible[kind]?'visible':'none'},minzoom:municipality?3.4:0,paint:{'line-color':municipality?'#dbe6ef':'#ffffff','line-width':municipality?['interpolate',['linear'],['zoom'],3.4,.45,8,.8,12,1.25]:['interpolate',['linear'],['zoom'],3,1.35,8,2],'line-opacity':municipality?.82:.96}});
     const labelField=municipality?['coalesce',['get','name'],['get','NM_MUN'],['get','NM_MUNICIP'],['get','municipio']]:['coalesce',['get','name'],['get','NM_UF'],['get','sigla'],['get','uf']];
     this.map.addLayer({id:`${source}-labels`,type:'symbol',source,minzoom:municipality?6.5:3.8,layout:{visibility:this.boundaryVisible[kind]?'visible':'none','text-field':labelField,'text-size':municipality?['interpolate',['linear'],['zoom'],6.5,9,11,13]:['interpolate',['linear'],['zoom'],3.8,11,7,15],'text-font':['Open Sans Regular'],'text-allow-overlap':false,'text-ignore-placement':false},paint:{'text-color':'#ffffff','text-halo-color':'#111820','text-halo-width':1.6,'text-halo-blur':.1}});
-    ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels'].forEach(id=>{if(this.map.getLayer(id))this.map.moveLayer(id)});
+    ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels','inmet-alerts-fill','inmet-alerts-line'].forEach(id=>{if(this.map.getLayer(id))this.map.moveLayer(id)});
   }
   drawBoundaryLayers(){for(const kind of ['states','municipalities'])if(this.boundaries[kind])this.drawBoundary(kind)}
   async restoreBoundaryLayers(){
@@ -678,22 +679,22 @@ export class MapManager{
     const id=layer.cacheKey?stableRadarId(layer.cacheKey):`radar-${layer.id}-${index}`;if(this.map.getLayer(id)&&(this.map.getSource(id)||this.v5PolarLayers.has(id))){if(track&&!this.radarLayers.includes(id))this.radarLayers.push(id);return id}
     if(this.radarScopeMode&&this.radarScopeProfile==='super_res_v2'&&layer.kind==='image'){
       const custom=createSuperResV2Layer({id,sourceLayer:layer,opacity:.7});
-      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:true,custom});
-      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
+      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:true,custom,sourceLayer:layer});
+      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels','inmet-alerts-fill','inmet-alerts-line'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
       return id;
     }
     if(this.radarScopeMode&&this.radarScopeProfile==='super_res'&&layer.kind==='image'){
       // Super Res: malha polar nativa com a paleta do estilo NWS Sideral.
       // Uma célula por pixel nativo; somente a cor de apresentação é alterada.
       const custom=createSuperResLayer({id,sourceLayer:layer,opacity,palette:paletteRgb(this.styleName)||SOURCE_REFLECTIVITY_COLORS.map(entry=>entry.rgb),variant:this.radarScopeProfile});
-      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:true,custom});
-      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
+      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:true,custom,sourceLayer:layer});
+      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels','inmet-alerts-fill','inmet-alerts-line'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
       return id;
     }
     if(this.radarScopeMode&&this.radarScopeProfile==='scope5'&&layer.kind==='image'){
       const custom=createV5PolarLayer({id,sourceLayer:layer,palette:paletteRgb(this.styleName)||SOURCE_REFLECTIVITY_COLORS.map(entry=>entry.rgb),classify:echoCode,dbzByCode:SOURCE_REFLECTIVITY_COLORS.map(entry=>entry.dbz),opacity});
-      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:false,custom});
-      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
+      this.v5PolarLayers.set(id,custom);this.map.addLayer(custom);if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:false,custom,sourceLayer:layer});
+      ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels','inmet-alerts-fill','inmet-alerts-line'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
       return id;
     }
     let source;
@@ -704,7 +705,7 @@ export class MapManager{
       const imageOrigin=scopeImageOrigin(layer,layerOrigin);
       // O Brazil Scope sempre refaz a malha polar, inclusive sobre imagens
       // nativas em cache, pois esse modo precisa de gates mais densos.
-      const transformScope=this.radarScopeMode&&(!layer.nativePixels||this.radarScopeProfile==='brazil');
+      const transformScope=this.radarScopeMode&&(!layer.nativePixels||this.radarScopeProfile==='brazil'||this.radarScopeProfile==='super');
       let radarUrl=transformScope?radarScopeUrl(layer.url,{origin:layerOrigin,imageOrigin,profile:this.radarScopeProfile,palette:this.styleName}):layer.url;
       if(!layer.preserveColors&&!transformScope&&!layer.skipPixelTransform)radarUrl=wxToolsUrl(radarUrl,this.styleName);
       source={type:'image',url:radarUrl,coordinates:layer.coordinates}
@@ -714,17 +715,17 @@ export class MapManager{
       const layerOrigin=layer.radar&&Number.isFinite(Number(layer.radar.longitude))&&Number.isFinite(Number(layer.radar.latitude))
         ?[Number(layer.radar.longitude),Number(layer.radar.latitude)]
         :this.radarScopeOrigin;
-      const transformScope=this.radarScopeMode&&(!layer.nativePixels||this.radarScopeProfile==='brazil');
+      const transformScope=this.radarScopeMode&&layer.kind!=='tiles'&&(!layer.nativePixels||this.radarScopeProfile==='brazil'||this.radarScopeProfile==='super');
       let radarTiles=transformScope?layer.tiles.map(url=>radarScopeUrl(url,{origin:layerOrigin,profile:this.radarScopeProfile,palette:this.styleName})):layer.tiles;
-      if(!layer.preserveColors&&!transformScope&&!layer.skipPixelTransform)radarTiles=radarTiles.map(url=>wxToolsUrl(url,this.styleName));
+      if(!layer.preserveColors&&!transformScope&&!layer.skipPixelTransform&&!(this.radarScopeMode&&this.radarScopeProfile==='super'&&layer.kind==='tiles'))radarTiles=radarTiles.map(url=>wxToolsUrl(url,this.styleName));
       source={type:'raster',tiles:radarTiles,tileSize:layer.tileSize||256};
       }
       if(Array.isArray(layer.bounds)&&layer.bounds.length===4)source.bounds=layer.bounds;
       if(Number.isFinite(layer.maxzoom))source.maxzoom=layer.maxzoom;
       if(layer.attribution)source.attribution=layer.attribution;
     }
-    this.map.addSource(id,source);this.map.addLayer({id,type:'raster',source:id,layout:{visibility:'visible'},paint:stylePaint(layer.preserveColors?'normal':this.styleName,opacity)});if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:Boolean(layer.preserveColors)});
-    ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
+    this.map.addSource(id,source);this.map.addLayer({id,type:'raster',source:id,layout:{visibility:'visible'},paint:stylePaint(layer.preserveColors?'normal':this.styleName,opacity)});if(track)this.radarLayers.push(id);this.radarLayerOptions.set(id,{preserveColors:Boolean(layer.preserveColors),sourceLayer:layer});
+    ['boundaries-states-shadow','boundaries-states','boundaries-states-labels','boundaries-municipalities-shadow','boundaries-municipalities','boundaries-municipalities-labels','radar-coverage','radar-coverage-line','radar-centers','lightning','storm-track-casing','storm-track-line','storm-track-ticks-casing','storm-track-ticks','storm-track-points','storm-track-origin','storm-track-origin-dot','storm-track-labels','inmet-alerts-fill','inmet-alerts-line'].forEach(layerId=>{if(this.map.getLayer(layerId))this.map.moveLayer(layerId)});
     if(layer.id==='ipmet-live'&&layer.bounds&&!layer.keepView)this.fitBounds(layer.bounds);
     return id;
   }
@@ -741,12 +742,17 @@ export class MapManager{
     if(transition!==this.radarTransition)return;
     previous.filter(id=>!next.includes(id)).forEach(id=>{const custom=this.v5PolarLayers.get(id);if(custom)custom.setOpacity(0);else if(this.map.getLayer(id))this.map.setPaintProperty(id,'raster-opacity',0)});
     next.forEach(id=>{const custom=this.v5PolarLayers.get(id);if(custom)custom.setOpacity(this.opacity);else if(this.map.getLayer(id))this.map.setPaintProperty(id,'raster-opacity',this.opacity)});
+    if(duration<=0){
+      await new Promise(resolve=>requestAnimationFrame(resolve));
+      if(transition===this.radarTransition){const replaced=previous.filter(id=>!next.includes(id));if(retain)replaced.forEach(id=>{if(this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility','none')});else this.removeRadarIds(replaced)}
+      return;
+    }
     await new Promise(resolve=>setTimeout(resolve,duration+35));
     if(transition===this.radarTransition){const replaced=previous.filter(id=>!next.includes(id));if(retain)replaced.forEach(id=>{if(this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility','none')});else this.removeRadarIds(replaced)}
   }
   async preloadRadarLayers(layers,timeout=12000){
     const ids=[];layers.forEach((layer,index)=>{if(!layer?.cacheKey)return;const id=this.addRadar(layer,`preload-${index}`,{track:false,opacity:0});if(id){ids.push(id);this.radarPool.add(id);if(this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility','visible')}});if(!ids.length)return true;
-    const loaded=await this.waitForRadarSources(ids,timeout),current=new Set(this.radarLayers);ids.forEach(id=>{if(!current.has(id)&&this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility','none')});return loaded;
+    const loaded=await this.waitForRadarSources(ids,timeout),current=new Set([...this.radarLayers,...this.pendingRadarLayers]);ids.forEach(id=>{if(!current.has(id)&&this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility','none')});return loaded;
   }
   waitForRadarSources(ids,timeout=3500){return new Promise(resolve=>{let done=false;const finish=loaded=>{if(done)return;done=true;clearTimeout(timer);this.map.off('sourcedata',check);resolve(loaded)};const check=()=>{if(ids.some(id=>!this.map.getLayer(id)||this.v5PolarLayers.get(id)?.failed))return finish(false);if(ids.every(id=>{const custom=this.v5PolarLayers.get(id);if(custom)return custom.ready;try{return this.map.isSourceLoaded(id)}catch{return false}}))finish(true)};const timer=setTimeout(()=>finish(false),timeout);this.map.on('sourcedata',check);ids.forEach(id=>this.v5PolarLayers.get(id)?.readyPromise.then(check));check()})}
   setRadarStyle(name,opacity=this.opacity){this.styleName=name;this.opacity=opacity;for(const id of this.radarLayers){if(!this.map.getLayer(id))continue;const custom=this.v5PolarLayers.get(id);if(custom){custom.setPalette(paletteRgb(name)||SOURCE_REFLECTIVITY_COLORS.map(entry=>entry.rgb));custom.setOpacity(opacity);continue}const paint=stylePaint(this.radarLayerOptions.get(id)?.preserveColors?'normal':name,opacity);Object.entries(paint).forEach(([key,value])=>this.map.setPaintProperty(id,key,value))}}
@@ -767,7 +773,42 @@ export class MapManager{
   setCoverage(radars,visible=true){
     this.removeLayerAndSource('radar-coverage-line');this.removeLayerAndSource('radar-coverage');
     const valid=radars.filter(r=>Number.isFinite(r.longitude)&&Number.isFinite(r.latitude));const polygons=valid.flatMap(r=>[circleFeature([r.longitude,r.latitude],r.rangeKm||250,{name:r.name,range:r.rangeKm||250}),...(r.surveillanceKm?[circleFeature([r.longitude,r.latitude],r.surveillanceKm,{name:r.name,range:r.surveillanceKm,outer:true})]:[])]);
-    const isOuter=['boolean',['get','outer'],false];this.map.addSource('radar-coverage',{type:'geojson',data:{type:'FeatureCollection',features:polygons}});this.map.addLayer({id:'radar-coverage',type:'fill',source:'radar-coverage',layout:{visibility:visible?'visible':'none'},paint:{'fill-color':['case',isOuter,'#e87924','#087f9b'],'fill-opacity':['case',isOuter,.025,.055]}});this.map.addLayer({id:'radar-coverage-line',type:'line',source:'radar-coverage',layout:{visibility:visible?'visible':'none'},paint:{'line-color':['case',isOuter,'#d86615','#007f9e'],'line-width':['case',isOuter,1,1.6],'line-opacity':['case',isOuter,.7,.9]}});if(this.map.getLayer('radar-centers'))this.map.moveLayer('radar-centers');
+    const isOuter=['boolean',['get','outer'],false];this.map.addSource('radar-coverage',{type:'geojson',data:{type:'FeatureCollection',features:polygons}});this.map.addLayer({id:'radar-coverage',type:'fill',source:'radar-coverage',layout:{visibility:visible?'visible':'none'},paint:{'fill-color':['case',isOuter,'#e87924','#087f9b'],'fill-opacity':['case',isOuter,.025,.055]}});this.map.addLayer({id:'radar-coverage-line',type:'line',source:'radar-coverage',layout:{visibility:visible?'visible':'none'},paint:{'line-color':['case',isOuter,'#d86615','#007f9e'],'line-width':['case',isOuter,1,1.6],'line-opacity':['case',isOuter,.7,.9]}});if(this.map.getLayer('radar-centers'))this.map.moveLayer('radar-centers');if(this.map.getLayer('inmet-alerts-fill'))this.map.moveLayer('inmet-alerts-fill');if(this.map.getLayer('inmet-alerts-line'))this.map.moveLayer('inmet-alerts-line');
+  }
+  setRadarProbeHandler(handler){this.radarProbeHandler=typeof handler==='function'?handler:null}
+  showRadarProbePopup(coordinates,{title='Leitura do radar',value='—',detail='',source='',coordinates:coordinateText=''}={}){
+    const root=document.createElement('div');root.className='sideral-map-popup';
+    const heading=document.createElement('strong');heading.textContent=title;root.append(heading);
+    const reading=document.createElement('div');reading.className='sideral-map-popup-value';reading.textContent=value;root.append(reading);
+    for(const text of [detail,source,coordinateText].filter(Boolean)){const line=document.createElement('small');line.textContent=text;root.append(line)}
+    this.radarProbePopup?.remove?.();this.radarProbePopup=new maplibregl.Popup({closeButton:true,closeOnClick:true,maxWidth:'270px'}).setLngLat(coordinates).setDOMContent(root).addTo(this.map);
+    return this.radarProbePopup;
+  }
+  setInmetAlerts(features=[],visible=this.inmetAlertsVisible){
+    this.inmetAlerts=Array.isArray(features)?features.filter(feature=>feature?.geometry&&feature?.properties?.source==='INMET'):[];
+    this.inmetAlertsVisible=Boolean(visible);this.drawInmetAlerts();
+  }
+  setInmetAlertsVisibility(visible){
+    this.inmetAlertsVisible=Boolean(visible);
+    for(const id of ['inmet-alerts-fill','inmet-alerts-line'])if(this.map.getLayer(id))this.map.setLayoutProperty(id,'visibility',this.inmetAlertsVisible?'visible':'none');
+  }
+  drawInmetAlerts(){
+    if(!this.map.isStyleLoaded()||!this.map.getStyle()?.layers)return;
+    for(const id of ['inmet-alerts-fill','inmet-alerts-line'])if(this.map.getLayer(id))this.map.removeLayer(id);
+    if(this.map.getSource('inmet-alerts'))this.map.removeSource('inmet-alerts');
+    if(!this.inmetAlerts.length)return;
+    this.map.addSource('inmet-alerts',{type:'geojson',data:{type:'FeatureCollection',features:this.inmetAlerts}});
+    this.map.addLayer({id:'inmet-alerts-fill',type:'fill',source:'inmet-alerts',layout:{visibility:this.inmetAlertsVisible?'visible':'none'},paint:{'fill-color':['coalesce',['get','alertColor'],'#e5b73b'],'fill-opacity':.14,'fill-outline-color':['coalesce',['get','alertColor'],'#e5b73b']}});
+    this.map.addLayer({id:'inmet-alerts-line',type:'line',source:'inmet-alerts',layout:{visibility:this.inmetAlertsVisible?'visible':'none'},paint:{'line-color':['coalesce',['get','alertColor'],'#e5b73b'],'line-width':['interpolate',['linear'],['zoom'],3,1.6,8,2.5,12,3.2],'line-opacity':.98}});
+  }
+  showInmetAlertPopup(feature,lngLat){
+    const p=feature?.properties||{},root=document.createElement('div');root.className='sideral-map-popup inmet-alert-popup';
+    const heading=document.createElement('strong');heading.textContent=p.descricao||'Aviso meteorológico INMET';root.append(heading);
+    const severity=document.createElement('div');severity.className='sideral-map-popup-value';severity.textContent=p.severidade||'Aviso oficial';root.append(severity);
+    const fields=[['Vigência',`${p.data_inicio||'—'} ${p.hora_inicio||''} até ${p.data_fim||'—'} ${p.hora_fim||''}`],['Estados',p.estados],['Municípios',p.municipios],['Riscos',Array.isArray(p.riscos)?p.riscos.join(' · '):p.riscos],['Instruções',Array.isArray(p.instrucoes)?p.instrucoes.join(' · '):p.instrucoes]];
+    for(const [label,value] of fields){if(!value)continue;const line=document.createElement('small');line.textContent=`${label}: ${String(value).slice(0,900)}`;root.append(line)}
+    const source=document.createElement('small');source.textContent='Fonte: INMET · polígono oficial publicado';root.append(source);
+    this.inmetPopup?.remove?.();this.inmetPopup=new maplibregl.Popup({closeButton:true,closeOnClick:true,maxWidth:'320px'}).setLngLat(lngLat).setDOMContent(root).addTo(this.map);return this.inmetPopup;
   }
   setRadarMarkers(radars){
     this.radarCatalog=(radars||[]).filter(r=>Number.isFinite(Number(r.longitude))&&Number.isFinite(Number(r.latitude)));

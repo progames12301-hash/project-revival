@@ -1,4 +1,4 @@
-import {RadarManager} from './RadarManager.js?v=20261024-fix2';
+import {RadarManager} from './RadarManager.js?v=20261106-cloudultra-smooth4';
 
 const app=new RadarManager();
 app.init().catch(error=>{

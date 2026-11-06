@@ -14,17 +14,30 @@ function corsImageUrl(url,base){
   }catch{return url}
 }
 export class RedemetProvider{
-  constructor(cache){this.id='redemet';this.name='REDEMET / DECEA';this.cache=cache;this.frames=[];this.product='03km';this.lastPublished=new Map();this.pixelManifest=null;this.base=proxyBase();this.officialUrl='https://ajuda.decea.mil.br/base-de-conhecimento/api-redemet-produtos-radar/'}
+  constructor(cache){this.id='redemet';this.name='REDEMET / DECEA';this.cache=cache;this.frames=[];this.product='03km';this.lastPublished=new Map();this.pixelManifest=null;this.pixelManifestAt=0;this.pixelManifestPromise=null;this.loadCache=new Map();this.loadPromises=new Map();this.base=proxyBase();this.officialUrl='https://ajuda.decea.mil.br/base-de-conhecimento/api-redemet-produtos-radar/'}
   async loadPixelManifest(product){
     if(product!=='03km')return null;
-    try{
-      const manifest=await fetchJson(`${PIXEL_CACHE_MANIFEST}?v=${Math.floor(Date.now()/60000)}`,{},5000);
-      if(manifest?.schema!=='sideral-radar-pixel-cache-v1'||!Array.isArray(manifest.frames))return null;
-      const generated=Date.parse(manifest.generated_at||'');
-      const ttl=Math.max(300,Number(manifest.ttl_seconds)||900);
-      if(Number.isFinite(generated)&&Date.now()-generated>ttl*1000*3)return null;
-      return manifest;
-    }catch{return null}
+    if(this.pixelManifest&&Date.now()-this.pixelManifestAt<300000)return this.pixelManifest;
+    if(this.pixelManifestPromise)return this.pixelManifestPromise;
+    this.pixelManifestPromise=(async()=>{
+      try{
+        const manifest=await fetchJson(`${PIXEL_CACHE_MANIFEST}?v=${Math.floor(Date.now()/300000)}`,{},7000);
+        if(manifest?.schema!=='sideral-radar-pixel-cache-v1'||!Array.isArray(manifest.frames))return this.pixelManifest;
+        const generated=Date.parse(manifest.generated_at||'');
+        const ttl=Math.max(300,Number(manifest.ttl_seconds)||900);
+        if(Number.isFinite(generated)&&Date.now()-generated>ttl*1000*3)return this.pixelManifest;
+        this.pixelManifest=manifest;this.pixelManifestAt=Date.now();return manifest;
+      }catch{return this.pixelManifest}
+      finally{this.pixelManifestPromise=null}
+    })();
+    return this.pixelManifestPromise;
+  }
+  inViewport(item,view){
+    if(!view)return true;
+    const west=Number(item?.lon_min),east=Number(item?.lon_max),south=Number(item?.lat_min),north=Number(item?.lat_max);
+    if(![west,east,south,north].every(Number.isFinite))return true;
+    const padX=Math.max(.5,(Number(view.east)-Number(view.west))*.08),padY=Math.max(.5,(Number(view.north)-Number(view.south))*.08);
+    return east>=Number(view.west)-padX&&west<=Number(view.east)+padX&&north>=Number(view.south)-padY&&south<=Number(view.north)+padY;
   }
   pixelCacheFor(image,item){
     const entries=(this.pixelManifest?.frames||[]).flatMap(frame=>Array.isArray(frame.items)?frame.items:[]);
@@ -46,6 +59,13 @@ export class RedemetProvider{
     return candidates[0];
   }
   async load(product='03km'){
+    const cached=this.loadCache.get(product);
+    if(cached&&Date.now()-cached.savedAt<25000){this.product=product;this.frames=cached.data.frames;return cached.data;}
+    if(this.loadPromises.has(product))return this.loadPromises.get(product);
+    const pending=this.loadFresh(product).then(data=>{this.loadCache.set(product,{data,savedAt:Date.now()});return data}).finally(()=>this.loadPromises.delete(product));
+    this.loadPromises.set(product,pending);return pending;
+  }
+  async loadFresh(product='03km'){
     this.product=product;
     const url=`${this.base}/api/redemet/radar?product=${encodeURIComponent(product)}&anima=15`;
     const manifestPromise=this.loadPixelManifest(product);
@@ -65,9 +85,9 @@ export class RedemetProvider{
     return {frames:this.frames,radars:[...records.values()].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')),availableRadars:[...records.values()].filter(radar=>radar.available).length,unavailableRadars:Math.max(0,catalogCodes.size-publishedCodes.size)};
   }
   latestDate(items){const dates=(items||[]).map(x=>parseDate(x.data)).filter(Boolean);return dates.length?new Date(Math.max(...dates.map(x=>x.getTime()))):null}
-  async imageLayers(frameIndex,selected='all'){
+  async imageLayers(frameIndex,selected='all',viewBounds=null){
     const frame=this.frames[frameIndex];if(!frame)return [];
-    const wanted=frame.items.filter(x=>selected==='all'||x.localidade===selected);const layers=await Promise.all(wanted.map(async item=>{
+    const wanted=frame.items.filter(x=>(selected==='all'||x.localidade===selected)&&this.inViewport(x,viewBounds));const layers=await Promise.all(wanted.map(async item=>{
       const candidates=[];for(let i=frameIndex;i>=0;i--){const candidate=this.frames[i].items.find(x=>x.localidade===item.localidade);if(candidate?.path&&candidate.path!=='null'&&!candidates.some(x=>x.path===candidate.path))candidates.push(candidate)}
       const imageCandidate=candidates[0]||this.lastPublished.get(item.localidade),cached=this.pixelCacheFor(imageCandidate,item);
       if(imageCandidate&&cached?.url){

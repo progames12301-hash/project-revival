@@ -17,3 +17,5 @@
 /* As opções de fronteira não somem quando o painel fica estreito. */
 .layer-buttons{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:204px}
 .layer-buttons button{flex:1 1 auto}
+
+.inmet-alerts-status{display:block;margin:-5px 0 10px!important;color:#c28b2b!important;font-size:10px!important;line-height:1.35}.sideral-map-popup{display:grid;gap:5px;min-width:170px;color:#182028;font:12px/1.35 Inter,Arial,sans-serif}.sideral-map-popup strong{font-size:13px}.sideral-map-popup-value{font-size:22px;font-weight:850;letter-spacing:.02em}.sideral-map-popup small{display:block;color:#4b5561;font-size:10px;line-height:1.4;overflow-wrap:anywhere}

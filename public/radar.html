@@ -29,11 +29,11 @@
       </div>
 
       <div id="radarTab" class="panel-tab-view active" role="tabpanel" aria-labelledby="radarTabButton" data-panel-view="radar">
-        <label>Fonte<select id="sourceSelect"><option value="all_no_rainviewer">Todos os radares — sem RainViewer</option><option value="rainviewer">Precipitação — mosaico (RainViewer)</option><option value="redemet">Radar REDEMET / DECEA</option><option value="cemaden">Radares CEMADEN / MCTI</option><option value="regional">Radares regionais</option><option value="inea">Radares INEA / RJ</option><option value="simepar">Radar SIMEPAR / PR</option><option value="ipmet">Radar IPMet / SP</option></select></label>
+        <label>Fonte<select id="sourceSelect"><option value="all_no_rainviewer">Todos os radares — sem RainViewer</option><option value="rainviewer">Precipitação — mosaico (RainViewer)</option><option value="redemet">Radar REDEMET / DECEA</option><option value="cloudultra">CloudUltra Res</option><option value="cemaden">Radares CEMADEN / MCTI</option><option value="regional">Radares regionais</option><option value="inea">Radares INEA / RJ</option><option value="simepar">Radar SIMEPAR / PR</option><option value="ipmet">Radar IPMet / SP</option></select></label>
         <label id="radarField">Radar<select id="radarSelect"><option value="all">Todos disponíveis</option></select></label>
         <div class="control-row"><span>Mapa</span><div class="segmented"><button id="view2d" type="button" class="active">2D</button><button id="view3d" type="button">3D</button></div></div>
-        <div class="control-row"><span>Camadas</span><div class="layer-buttons"><button id="lightningToggle" type="button" aria-pressed="false" title="Raios GLM — GOES-East / NOAA">Raios — GLM</button><button id="markerToggle" type="button" class="active" aria-pressed="true">Radares</button><button id="coverageToggle" type="button" class="active" aria-pressed="true">Áreas</button><button id="trackToggle" type="button" class="active" aria-pressed="true">Trajetos</button><button id="statesToggle" type="button" class="active" aria-pressed="true">Estados</button><button id="municipalitiesToggle" type="button" class="active" aria-pressed="true">Municípios</button></div></div>
-        <small id="lightningStatus" class="lightning-status">GOES-East — GLM · atualizando…</small>
+        <div class="control-row"><span>Camadas</span><div class="layer-buttons"><button id="lightningToggle" type="button" aria-pressed="false" title="Raios GLM — GOES-East / NOAA">Raios — GLM</button><button id="markerToggle" type="button" class="active" aria-pressed="true">Radares</button><button id="coverageToggle" type="button" class="active" aria-pressed="true">Áreas</button><button id="trackToggle" type="button" class="active" aria-pressed="true">Trajetos</button><button id="statesToggle" type="button" class="active" aria-pressed="true">Estados</button><button id="municipalitiesToggle" type="button" class="active" aria-pressed="true">Municípios</button><button id="inmetAlertsToggle" type="button" class="active" aria-pressed="true" title="Avisos oficiais do INMET">Avisos INMET</button></div></div>
+        <small id="lightningStatus" class="lightning-status">GOES-East — GLM · atualizando…</small><small id="inmetAlertsStatus" class="inmet-alerts-status">INMET · consultando avisos oficiais…</small>
         <label>Cor do mapa<select id="mapTheme"><option value="light">Claro</option><option value="gray">Cinza</option><option value="dark" selected>Escuro</option><option value="satellite">Satélite</option></select></label>
         <div class="panel-actions"><button id="homeButton" type="button"><i class="ph ph-crosshair"></i> Brasil</button><button id="northButton" type="button"><i class="ph ph-compass"></i> Norte</button><button id="fullscreenButton" type="button"><i class="ph ph-corners-out"></i> Tela cheia</button><label class="download-format">Formato<select id="downloadFormat"><option value="png">PNG — quadro atual</option><option value="gif">GIF — animação</option></select></label><label class="download-quality">Qualidade da exportação<select id="downloadQuality"><option value="standard">Boa — arquivo menor</option><option value="high" selected>Alta — recomendada</option><option value="maximum">Máxima — mais demorada</option><option value="supreme4k">Suprema — 4K Ultra HD</option></select></label><button id="downloadRadar" class="download-radar" type="button"><i class="ph ph-download-simple"></i> Baixar PNG</button></div>
       </div>
@@ -65,7 +65,7 @@
             <option value="wx_dark_sky">WxTools · Dark Sky</option>
             <option value="wx_tropical_hd">WxTools · Tropical HD</option>
           </optgroup>
-          <optgroup label="Doppler — CPTEC / WxTools">
+          <optgroup label="Doppler e polarimetria">
           </optgroup>
           <optgroup label="Sideral / compatibilidade">
             <option value="super_res">Super Res · estilo NWS Sideral</option>
@@ -115,7 +115,7 @@
       </div>
     </div>
     <aside id="radarStatus" class="radar-status" role="status" aria-live="polite"><strong id="statusTitle">Carregando o radar…</strong><span id="statusDetail">Buscando as imagens mais recentes.</span><dl><div><dt>Varredura</dt><dd id="scanTime">—</dd></div><div><dt>Origem</dt><dd id="dataOrigin">—</dd></div></dl></aside>
-    <section class="timeline" aria-label="Animação do radar"><div class="playback"><button id="prevFrame" type="button" aria-label="Quadro anterior"><i class="ph ph-skip-back"></i></button><button id="playPause" type="button" aria-label="Reproduzir"><i class="ph ph-play"></i></button><button id="nextFrame" type="button" aria-label="Próximo quadro"><i class="ph ph-skip-forward"></i></button><select id="speedSelect" aria-label="Velocidade"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></div><div class="timeline-track"><input id="frameSlider" type="range" min="0" max="0" value="0"><div><span id="firstTime">—</span><strong id="currentTime">—</strong><span id="lastTime">—</span></div></div></section>
+    <section class="timeline" aria-label="Animação do radar"><div class="playback"><button id="prevFrame" type="button" aria-label="Quadro anterior"><i class="ph ph-skip-back"></i></button><button id="playPause" type="button" aria-label="Reproduzir"><i class="ph ph-play"></i></button><button id="nextFrame" type="button" aria-label="Próximo quadro"><i class="ph ph-skip-forward"></i></button><select id="speedSelect" aria-label="Velocidade"><option value="0" selected>Delay 0 · contínuo</option><option value="0.5">0,5×</option><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></div><div class="timeline-track"><input id="frameSlider" type="range" min="0" max="0" value="0"><div><span id="firstTime">—</span><strong id="currentTime">—</strong><span id="lastTime">—</span></div></div></section>
     <div class="dbz-legend" aria-label="Legenda de refletividade"><strong>dBZ</strong><div class="dbz-scale"></div><div class="dbz-values"><span>5</span><span>20</span><span>35</span><span>50</span><span>65</span><span>70+</span></div></div>
     <div id="loadingScreen" class="radar-loading"><img src="Logotipo_da_Área_de_Tecnologia_e_Games_Audio_Cinza-removebg-preview.png" alt="Sideral"><span>Carregando radar…</span></div>
   </main>
@@ -190,6 +190,6 @@
       });
     })();
   </script>
-<script type="module" src="radar/main.js?v=20261024-fix2"></script>
+<script type="module" src="radar/main.js?v=20261106-cloudultra-smooth4"></script>
 </body>
 </html>
