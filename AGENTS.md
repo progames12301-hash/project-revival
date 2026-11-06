@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- The Sideral site is static HTML/CSS/JS in public/; "/" redirects to /index.html and src/routes/api/$.ts proxies weather-data APIs (ported Cloudflare worker) so pages keep same-origin /api/* paths.

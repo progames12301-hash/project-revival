@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar — Sideral Meteorologia</title>
+<meta name="description" content="Seu acesso ao universo Sideral: meteorologia gratuita, modelos numéricos WRF e Skew T. Página demonstrativa de login e cadastro.">
+<meta name="author" content="Sideral Meteorologia">
+<meta property="og:title" content="Entrar — Sideral Meteorologia">
+<meta property="og:description" content="O maior hub gratuito de meteorologia. Conheça as opções de acesso à Sideral.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="favicon.png" type="image/png">
+</head>
+<body>
+<div class="login-page">
+  <header class="login-header">
+    <a aria-label="Sideral Meteorologia, início" href="index.html"><div class="brand"><img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213"></div></a>
+    <a class="login-back" href="index.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg><span>Voltar à Sideral</span></a>
+  </header>
+  <main class="login-main"><div class="login-intro">
+    <h1 class="login-title">O maior hub<br>gratuito de<br><span class="login-changing" aria-hidden="true"><em id="typing-word">WRF</em><span class="typing-cursor"></span></span><span class="sr-only">meteorologia.</span></h1>
+    <button class="btn btn-sideral btn-lg login-start" id="start-btn" type="button">Começar <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+    <p class="login-account-prompt">Já tem uma conta? <button class="btn btn-link btn-md" id="signin-btn" type="button">Clique aqui</button></p>
+  </div></main>
+  <footer class="login-footer"><span>© 2026 Sideral Meteorologia</span><span>Meteorologia gratuita. Para todos.</span></footer>
+</div>
+<script src="js/dialog.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
