@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redefinir senha — Sideral Meteorologia</title>
+  <meta name="description" content="Defina uma nova senha para sua conta Sideral.">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sideral-auth.css">
+</head>
+<body class="sa-page">
+  <main class="sa-card">
+    <h1>Nova senha</h1>
+    <p class="sub">Escolha uma nova senha para sua conta.</p>
+    <form id="form">
+      <label class="sa-field">Nova senha<input name="password" type="password" autocomplete="new-password" minlength="6" required></label>
+      <button class="sa-primary" type="submit">Salvar senha</button>
+      <p class="sa-msg" id="msg" role="status"></p>
+    </form>
+  </main>
+  <script type="module">
+    import { auth } from '/js/sideral-auth.js';
+    const form = document.getElementById('form'), m = document.getElementById('msg');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      if (form.password.value.length < 6) { m.className = 'sa-msg err'; m.textContent = 'Mínimo de 6 caracteres.'; return; }
+      const { error } = await auth.updatePassword(form.password.value);
+      m.className = 'sa-msg ' + (error ? 'err' : 'ok');
+      m.textContent = error ? 'Link inválido ou expirado. Peça um novo.' : 'Senha atualizada! Redirecionando…';
+      if (!error) setTimeout(() => (location.href = '/v3.html'), 1200);
+    };
+  </script>
+</body>
+</html>

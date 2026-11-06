@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar — Sideral Meteorologia</title>
+  <meta name="description" content="Entre ou crie sua conta na Sideral Meteorologia.">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sideral-auth.css">
+</head>
+<body class="sa-page">
+  <main class="sa-card">
+    <a href="index.html"><img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia"></a>
+    <h1 id="title">Entrar</h1>
+    <p class="sub" id="sub">Acesse sua conta Sideral.</p>
+    <div class="sa-tabs" role="tablist">
+      <button type="button" class="on" data-mode="in">Entrar</button>
+      <button type="button" data-mode="up">Criar conta</button>
+    </div>
+    <!-- Botões de Google e outros provedores entram aqui -->
+    <div class="sa-social" id="social"></div>
+    <form id="form" novalidate>
+      <label class="sa-field" id="nameField" hidden>Nome<input name="name" autocomplete="name" maxlength="80"></label>
+      <label class="sa-field">E-mail<input name="email" type="email" autocomplete="email" required></label>
+      <label class="sa-field" id="passField">Senha<input name="password" type="password" autocomplete="current-password" minlength="6" required></label>
+      <button class="sa-primary" type="submit" id="submit">Entrar</button>
+      <p class="sa-msg" id="msg" role="status"></p>
+    </form>
+    <button class="sa-link" type="button" id="forgot">Esqueci minha senha</button>
+    <br><a class="sa-back" href="v3.html">← Voltar</a>
+  </main>
+  <script type="module">
+    import { auth } from '/js/sideral-auth.js';
+    const q = new URLSearchParams(location.search).get('next') || '/v3.html';
+    const next = q.startsWith('/') && !q.startsWith('//') ? q : '/v3.html';
+    const $ = (id) => document.getElementById(id);
+    const form = $('form');
+    let mode = 'in';
+    const setMode = (m) => {
+      mode = m;
+      document.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+      $('nameField').hidden = m !== 'up';
+      $('passField').hidden = m === 'reset';
+      form.password.autocomplete = m === 'up' ? 'new-password' : 'current-password';
+      $('title').textContent = { in: 'Entrar', up: 'Criar conta', reset: 'Recuperar senha' }[m];
+      $('sub').textContent = { in: 'Acesse sua conta Sideral.', up: 'Leva menos de um minuto.', reset: 'Enviaremos um link para o seu e-mail.' }[m];
+      $('submit').textContent = { in: 'Entrar', up: 'Criar conta', reset: 'Enviar link' }[m];
+      msg('');
+    };
+    const msg = (t, ok) => { $('msg').textContent = t; $('msg').className = 'sa-msg ' + (ok ? 'ok' : 'err'); };
+    document.querySelectorAll('[data-mode]').forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
+    $('forgot').onclick = () => setMode('reset');
+    const ptErr = (e) => /invalid login/i.test(e.message) ? 'E-mail ou senha incorretos.'
+      : /not confirmed/i.test(e.message) ? 'Confirme seu e-mail antes de entrar.'
+      : /already registered/i.test(e.message) ? 'Este e-mail já tem conta. Use “Entrar”.' : e.message;
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const email = form.email.value.trim(), password = form.password.value, name = form.name.value.trim();
+      if (!/^\S+@\S+\.\S+$/.test(email)) return msg('Informe um e-mail válido.');
+      if (mode !== 'reset' && password.length < 6) return msg('A senha precisa ter ao menos 6 caracteres.');
+      $('submit').disabled = true;
+      try {
+        if (mode === 'in') {
+          const { error } = await auth.signIn(email, password);
+          if (error) return msg(ptErr(error));
+          location.href = next;
+        } else if (mode === 'up') {
+          const { data, error } = await auth.signUp(email, password, name || undefined);
+          if (error) return msg(ptErr(error));
+          if (data.session) location.href = next;
+          else msg('Conta criada! Verifique seu e-mail para confirmar.', true);
+        } else {
+          const { error } = await auth.resetPassword(email);
+          if (error) return msg(ptErr(error));
+          msg('Se houver uma conta, você receberá um link por e-mail.', true);
+        }
+      } finally { $('submit').disabled = false; }
+    };
+  </script>
+</body>
+</html>
