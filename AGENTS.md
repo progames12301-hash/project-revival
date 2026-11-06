@@ -30,3 +30,4 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - The Sideral site is static HTML/CSS/JS in public/; "/" redirects to /index.html and src/routes/api/$.ts proxies weather-data APIs (ported Cloudflare worker) so pages keep same-origin /api/* paths.
+- Accounts for static pages live in public/js/sideral-auth.js (shared Lovable Cloud client + auth helpers); add new sign-in providers there and their buttons in entrar.html #social so every page shares one login.
