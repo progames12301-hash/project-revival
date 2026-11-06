@@ -54,6 +54,48 @@ async function nowcast(request: Request, url: URL) {
   }
 }
 
+const CLOUDULTRA_UPSTREAM = "https://nowcasting.cptec.inpe.br";
+
+async function passthrough(request: Request, upstreamUrl: string, ttl: number, contentType: string, errMsg: string) {
+  const headers = new Headers(corsHeaders(request));
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: request.method,
+      headers: { Accept: contentType === "image/png" ? "image/png" : "application/json" },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    });
+    headers.set("Content-Type", upstream.headers.get("Content-Type") || contentType);
+    headers.set("Cache-Control", upstream.ok ? `public, max-age=${ttl}` : "no-store");
+    return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers });
+  } catch (error) {
+    return json({ error: errMsg, details: String((error as Error)?.message || error) }, 502, { ...corsHeaders(request), "Cache-Control": "no-store" });
+  }
+}
+
+async function cloudultra(request: Request, url: URL) {
+  const h = corsHeaders(request);
+  const okPath = (p: string) => /^[a-z0-9_~.-]{4,180}$/i.test(p);
+  const err = "CloudUltra Res temporariamente indisponível.";
+  if (url.pathname === "/api/cloudultra/catalog") {
+    return passthrough(request, `${CLOUDULTRA_UPSTREAM}/api/v1/paths/catalog`, 60, "application/json; charset=utf-8", err);
+  }
+  if (url.pathname === "/api/cloudultra/times") {
+    const path = url.searchParams.get("path") || "";
+    if (!okPath(path)) return json({ error: "Caminho de produto inválido." }, 400, h);
+    return passthrough(request, `${CLOUDULTRA_UPSTREAM}/api/v1/paths/radar/layers/${encodeURIComponent(path)}/times`, 45, "application/json; charset=utf-8", err);
+  }
+  if (url.pathname === "/api/cloudultra/frame") {
+    const path = url.searchParams.get("path") || "";
+    const time = url.searchParams.get("time") || "";
+    const version = url.searchParams.get("version") || "";
+    if (!okPath(path) || !/^\d{12}$/.test(time) || !/^\d{6,16}$/.test(version)) {
+      return json({ error: "Parâmetros de quadro inválidos." }, 400, h);
+    }
+    return passthrough(request, `${CLOUDULTRA_UPSTREAM}/api/v1/paths/frames/radar/${encodeURIComponent(path)}/${time}/full?v=${encodeURIComponent(version)}`, 600, "image/png", err);
+  }
+  return json({ error: "Rota CloudUltra Res não encontrada." }, 404, h);
+}
+
 async function proxyToBackend(request: Request, url: URL) {
   const upstreamUrl = new URL(url.pathname + url.search, RADAR_BACKEND);
   const cacheable = CACHEABLE_PREFIXES.some((p) => url.pathname.startsWith(p));
@@ -106,6 +148,10 @@ async function handle({ request }: { request: Request }) {
     return json({ error: "Método não permitido." }, 405, corsHeaders(request));
   }
   if (url.pathname === "/api/cptec-nowcast/frame") return nowcast(request, url);
+  if (url.pathname.startsWith("/api/cloudultra/")) return cloudultra(request, url);
+  if (url.pathname === "/api/inmet/avisos") {
+    return passthrough(request, "https://apiprevmet3.inmet.gov.br/avisos/ativos", 60, "application/json; charset=utf-8", "API oficial de avisos do INMET indisponível.");
+  }
   if (BACKEND_PREFIXES.some((p) => url.pathname.startsWith(p))) return proxyToBackend(request, url);
   return json({ error: "Not found" }, 404, corsHeaders(request));
 }
