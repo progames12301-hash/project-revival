@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frentes NOAA | Sideral Meteorologia</title>
+  <meta name="description" content="Visualizador Sideral dos algoritmos de frentes e caracterização de massas de ar do NOAA/WPC para a América do Sul.">
+  <meta name="author" content="Sideral Meteorologia">
+  <meta name="theme-color" content="#171a20">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <style>
+    :root{color-scheme:dark;--bg:#171a20;--panel:#22262e;--panel2:#2b3039;--border:rgba(255,255,255,.085);--text:#edf1f7;--muted:#98a3b3;--red:#ed3448}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"DM Sans",Arial,sans-serif}button,a{font:inherit;-webkit-tap-highlight-color:transparent}a{color:inherit}
+    .site-header{position:relative;z-index:20;background:#20242c;border-bottom:1px solid rgba(255,255,255,.08)}
+    .container-sideral{width:min(100% - 48px,1480px);margin-inline:auto}
+    .site-header .header-inner{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:30px;padding-block:10px}
+    .brand-lockup{display:flex;align-items:center;gap:11px;flex:0 0 auto}.brand{display:inline-flex;align-items:center;text-decoration:none}.brand-logo{display:block;width:150px;height:auto;max-height:55px;object-fit:contain}
+    .root-mark{flex:0 0 auto;overflow:visible}.root-sign,.root-bar{fill:none;stroke:#ed3448;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.root-value{fill:#ed3448;font:700 16px "Manrope",sans-serif}
+    .header-nav{display:flex;align-items:center;justify-content:center;gap:clamp(16px,2.5vw,38px);flex:1 1 auto}.header-nav a,.mobile-nav a{color:#e8edf5;font-size:13px;font-weight:650;text-decoration:none;transition:color .18s}.header-nav a:hover,.mobile-nav a:hover{color:#ff7a87}
+    .header-actions{display:flex;align-items:center;gap:14px;flex:0 0 auto}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;text-decoration:none;cursor:pointer;font-weight:700}.btn-navigation{background:transparent;color:#e6edf7;border-color:rgba(255,255,255,.14)}.btn-navigation:hover{background:rgba(255,255,255,.06)}.btn-icon{width:40px;min-width:40px;height:40px;padding:0}.mobile-menu-button,.mobile-nav{display:none}
+    .fram-app{height:calc(100vh - 78px);min-height:570px;display:flex;flex-direction:column}
+    .toolbar{min-height:49px;display:flex;align-items:stretch;justify-content:space-between;background:#262b34;border-bottom:1px solid #11151b;box-shadow:0 4px 18px rgba(0,0,0,.12)}.toolbar-group{display:flex;align-items:center;gap:6px;padding:7px 12px;min-width:0}.toolbar-group+.toolbar-group{border-left:1px solid var(--border)}
+    .tool-btn{display:inline-grid;place-items:center;flex:0 0 auto;width:33px;height:32px;padding:0;color:#d1d9e4;background:transparent;border:1px solid transparent;border-radius:5px;cursor:pointer}.tool-btn:hover,.tool-btn[aria-pressed="true"]{background:rgba(237,52,72,.14);border-color:rgba(237,52,72,.35);color:#fff}.tool-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .cycle-inline{display:flex;align-items:center;gap:6px}.cycle-label{color:#aeb9c8;font-size:10px;font-weight:800;letter-spacing:.08em;white-space:nowrap}.cycle-btn{min-height:31px;padding:6px 13px;color:#aeb9c8;background:#20242b;border:1px solid rgba(255,255,255,.09);border-radius:4px;font-size:11px;font-weight:800;cursor:pointer}.cycle-btn[aria-pressed="true"]{color:#fff;background:rgba(237,52,72,.16);border-color:rgba(237,52,72,.55);box-shadow:inset 0 -2px 0 var(--red)}
+    .toolbar-link{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:7px 10px;background:#292e37;border:1px solid rgba(255,255,255,.08);border-radius:5px;color:#cbd4e0;text-decoration:none;font-size:10px;font-weight:800;white-space:nowrap}.toolbar-link:hover{color:#fff;background:#343b47}
+    .fram-layout{display:grid;grid-template-columns:270px minmax(0,1fr) 205px;flex:1;min-height:0}.fram-layout.left-hidden{grid-template-columns:minmax(0,1fr) 205px}.fram-layout.left-hidden .parameters{display:none}.fram-layout.right-hidden{grid-template-columns:270px minmax(0,1fr)}.fram-layout.right-hidden .domains{display:none}.fram-layout.left-hidden.right-hidden{grid-template-columns:minmax(0,1fr)}
+    .parameters,.domains{position:relative;z-index:2;min-width:0;display:flex;flex-direction:column;background:#22262e}.parameters{border-right:1px solid rgba(0,0,0,.25)}.domains{border-left:1px solid rgba(0,0,0,.25)}
+    .side-title{padding:16px 16px 14px;background:#2b3039;border-bottom:1px solid var(--border)}.side-title .eyebrow{display:block;margin:0 0 7px;color:#9ba6b6;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.side-title h1{margin:0;font:800 16px/1.25 Manrope,sans-serif;letter-spacing:-.03em}.side-title p{margin:6px 0 0;color:#9ba7b7;font-size:11px;line-height:1.45}
+    .side-section{padding:14px 10px;border-bottom:1px solid var(--border)}.section-label{display:flex;align-items:center;justify-content:space-between;margin:0 6px 10px;color:#9ba6b6;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .choice{display:flex;align-items:center;gap:10px;width:100%;min-height:43px;margin:0 0 3px;padding:10px 11px;color:#cbd3df;text-align:left;background:transparent;border:1px solid transparent;border-radius:4px;cursor:pointer;font-size:12px}.choice:hover{background:#2b3039}.choice[aria-pressed="true"]{color:#fff;background:#e4e5e7;border-color:#e4e5e7;box-shadow:inset 3px 0 0 var(--red)}.choice[aria-pressed="true"] .choice-dot{background:var(--red)}.choice-dot{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#667487}.choice-text{flex:1}.choice-arrow{font-size:17px;color:#718095}
+    .help-note{padding:13px 15px;color:#9ca8b8;font-size:10px;line-height:1.6}.help-note strong{color:#dde4ed}
+    .map-panel{display:flex;flex-direction:column;position:relative;min-width:0;min-height:0;background:#161a20;overflow:hidden}.map-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:8px 14px;background:#1e222a;border-bottom:1px solid var(--border)}.map-head-left{min-width:0}.map-kicker{display:flex;align-items:center;gap:7px;color:#8e9caf;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.dot{width:5px;height:5px;border-radius:50%;background:var(--red)}.map-heading{margin:4px 0 0;font:800 13px Manrope,sans-serif;color:#f2f5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.map-head-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}.map-stage{position:relative;flex:1;min-height:0;background:#f4f6f8}.wpc-frame{display:block;width:100%;height:100%;min-height:480px;border:0;background:#fff}.frame-info{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;color:#dfe6ef;background:rgba(27,31,39,.92);border:1px solid rgba(255,255,255,.12);border-radius:5px;font-size:10px;line-height:1.45;backdrop-filter:blur(8px)}.frame-info[hidden]{display:none}.frame-info a{color:#ff8c98;font-weight:800;white-space:nowrap}
+    .domains .choice{min-height:36px;margin-bottom:1px}.domains .choice[aria-pressed="true"]{color:#1d222b;background:#e4e5e7;border-color:#e4e5e7;box-shadow:inset 3px 0 0 var(--red)}.domains .choice[aria-pressed="true"] .choice-dot{background:var(--red)}
+    
+    .legend-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(6,8,12,.7)}.legend-modal[hidden]{display:none}.legend-card{width:min(560px,100%);max-height:min(80vh,680px);overflow:auto;padding:22px;background:#22262e;border:1px solid rgba(255,255,255,.13);border-radius:8px;box-shadow:0 20px 80px rgba(0,0,0,.45)}.legend-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.legend-card h2{margin:0;font:800 18px Manrope,sans-serif}.legend-card p,.legend-card li{color:#c2ccd8;font-size:12px;line-height:1.7}.legend-card ul{padding-left:20px}.legend-close{width:34px;height:34px;color:#e7edf5;background:#303641;border:1px solid var(--border);border-radius:5px;cursor:pointer}.source-link{display:inline-flex;margin-top:5px;color:#ff8b97;font-size:12px;font-weight:800;text-decoration:none}.source-link:hover{text-decoration:underline}
+    @media(max-width:1100px){.fram-layout{grid-template-columns:235px minmax(0,1fr) 180px}.fram-layout.left-hidden{grid-template-columns:minmax(0,1fr) 180px}.fram-layout.right-hidden{grid-template-columns:235px minmax(0,1fr)}.brand-logo{width:128px}.header-inner{gap:16px}.header-nav{gap:14px}.header-nav a{font-size:11px}.toolbar-group{padding-inline:7px}.cycle-label{display:none}}
+    @media(max-width:760px){.container-sideral{width:calc(100% - 28px)}.site-header .header-inner{min-height:67px}.brand-logo{width:116px;max-height:43px}.root-mark{width:31px;height:21px}.header-nav{display:none}.header-actions{margin-left:auto}.mobile-menu-button{display:inline-grid;place-items:center;width:36px;height:36px;color:#edf3fb;background:transparent;border:1px solid rgba(255,255,255,.18);border-radius:6px}.mobile-nav:not([hidden]){display:flex;flex-direction:column;gap:0;padding:6px 18px 14px;border-top:1px solid rgba(255,255,255,.07)}.mobile-nav a{padding:10px 0}.fram-app{height:calc(100vh - 67px);min-height:540px}.toolbar{min-height:45px;justify-content:space-between}.toolbar-group{gap:3px;padding:5px}.tool-btn{width:29px;height:29px}.toolbar-link .link-label{display:none}.cycle-btn{min-height:29px;padding:5px 8px;font-size:10px}.fram-layout,.fram-layout.left-hidden,.fram-layout.right-hidden,.fram-layout.left-hidden.right-hidden{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(400px,1fr)}.parameters,.domains{display:none;border:0;border-bottom:1px solid var(--border)}.parameters.is-open,.domains.is-open{display:flex}.fram-layout.left-hidden .parameters{display:none}.fram-layout.right-hidden .domains{display:none}.fram-layout.left-hidden.right-hidden .parameters,.fram-layout.left-hidden.right-hidden .domains{display:none}.side-title{padding:11px 14px}.side-section{padding:9px}.parameters .choice{min-height:36px}.map-head{padding:7px 9px;min-height:43px}.map-heading{font-size:11px}.map-stage{min-height:0}.wpc-frame{min-height:420px}.frame-info{left:5px;right:5px;bottom:5px;font-size:9px}.domains.is-open{order:2}}
+    @media(max-width:430px){.brand-logo{width:103px}.root-mark{display:none}.toolbar-group{padding-inline:3px}.toolbar-link{padding-inline:8px}.toolbar .tool-btn{width:26px}.cycle-inline{gap:3px}.cycle-btn{padding-inline:6px}.map-head-actions .toolbar-link{font-size:0;width:29px;min-width:29px;justify-content:center}.map-head-actions .toolbar-link svg{width:15px;height:15px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+  </style>
+<link rel="stylesheet" href="css/site-header.css">
+</head>
+<body class="fram-page">
+  <div class="site-shell" id="inicio">
+    <header class="site-header"><div class="container-sideral header-inner"><div class="brand-lockup"><a class="brand" href="index.html" aria-label="Sideral Meteorologia"><img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213"></a><svg class="root-mark" viewBox="0 0 40 26" width="40" height="26" role="img" aria-label="Sideral V3"><path class="root-sign" d="M1 15 H5.5 L8.5 23.5 L15 2"></path><path class="root-bar" d="M14.2 2 H31.5"></path><text class="root-value" x="23" y="21.5">3</text></svg></div><nav class="header-nav" aria-label="Navegação principal"><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav><div class="header-actions"><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button></div></div><nav class="mobile-nav" id="mobile-nav" hidden><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav></header>
+    <main class="fram-app" id="frentes">
+      <div class="toolbar" role="toolbar" aria-label="Controles do algoritmo de frentes">
+        <div class="toolbar-group">
+          <button class="tool-btn" id="fullscreenMap" title="Tela cheia" aria-label="Tela cheia"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+          <button class="tool-btn" id="toggleParameters" title="Mostrar ou ocultar parâmetros" aria-label="Mostrar ou ocultar parâmetros" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M9 4v16"/></svg></button>
+        </div>
+        <div class="toolbar-group cycle-inline" aria-label="Ciclo GFS">
+          <span class="cycle-label">CICLO GFS</span>
+          <button class="cycle-btn" data-cycle="00Z" aria-pressed="true">NOAA 00Z</button>
+          <button class="cycle-btn" data-cycle="12Z" aria-pressed="false">NOAA 12Z</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tool-btn" id="toggleDomains" title="Mostrar ou ocultar domínios" aria-label="Mostrar ou ocultar domínios" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M15 4v16"/></svg></button>
+        </div>
+      </div>
+      <div class="fram-layout" id="framLayout">
+        <aside class="parameters" id="parameters" aria-label="Parâmetros do algoritmo">
+          <div class="side-title"><h1>Frentes NOAA</h1></div>
+          <section class="side-section"><h2 class="section-label">Ciclos</h2>
+            <button class="choice" data-cycle="00Z" aria-pressed="true"><span class="choice-dot"></span><span class="choice-text">NOAA 00Z</span><span class="choice-arrow">›</span></button>
+            <button class="choice" data-cycle="12Z" aria-pressed="false"><span class="choice-dot"></span><span class="choice-text">NOAA 12Z</span><span class="choice-arrow">›</span></button>
+            <button class="choice" id="openLegend"><span class="choice-dot"></span><span class="choice-text">Legenda</span><span class="choice-arrow">↗</span></button>
+          </section>
+
+        </aside>
+        <section class="map-panel" id="mapPanel" aria-label="Mapa de frentes NOAA">
+          <div class="map-stage" id="mapStage">
+            <iframe class="wpc-frame" id="wpcFrame" title="Mapa NOAA de frentes e massas de ar" src="https://www.wpc.ncep.noaa.gov/international/wng/00/front_csa.html" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+        </section>
+        <aside class="domains" id="domains" aria-label="Domínios meteorológicos">
+          <div class="side-title"><span class="eyebrow">Domínios</span></div>
+          <section class="side-section">
+            <button class="choice" data-domain="cone-sul" aria-pressed="true"><span class="choice-text">Cone Sul</span></button>
+          </section>
+
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <div class="legend-modal" id="legendModal" role="dialog" aria-modal="true" aria-labelledby="legendTitle" hidden>
+    <section class="legend-card">
+      <div class="legend-top"><h2 id="legendTitle">Legenda · FRAM</h2><button type="button" id="closeLegend" class="legend-close" aria-label="Fechar legenda">✕</button></div>
+      <p>O FRAM (Front and Airmass Characterization) auxilia a identificar frentes de superfície e características de massas de ar a partir dos gradientes horizontais de espessura e ponto de orvalho na baixa troposfera.</p>
+      <ul><li><strong>Gradientes de massas de ar:</strong> sombreamento e contornos que ajudam a destacar contrastes entre massas de ar.</li><li><strong>Espessura 1000–925 hPa:</strong> contornos de espessura na baixa troposfera.</li><li><strong>Ventos 1000–925 hPa:</strong> fluxo médio na camada inferior.</li><li><strong>Convergência de fluxo de umidade:</strong> caixas/sinais de convergência aprimorada na camada 1000–925 hPa.</li></ul>
+      <p>O algoritmo é uma ferramenta de apoio à previsão, não uma previsão oficial independente.</p>
+    </section>
+  </div>
+  <script>
+  (()=>{
+    'use strict';
+    // The WPC product pages below render the selected front/airmass graphic directly,
+    // instead of embedding the full WPC navigation page.
+    const domains={
+      'cone-sul':{
+        label:'Cone Sul',
+        urls:{
+          '00Z':'https://www.wpc.ncep.noaa.gov/international/wng/00/front_csa.html',
+          '12Z':'https://www.wpc.ncep.noaa.gov/international/wng/12/front_csa.html'
+        }
+      }
+    };
+    let domain='cone-sul',cycle='00Z';
+    const frame=document.getElementById('wpcFrame'),layout=document.getElementById('framLayout');
+    function update(reloadFrame=true){
+      document.querySelectorAll('[data-domain]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.domain===domain)));
+      document.querySelectorAll('[data-cycle]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cycle===cycle)));
+      if(reloadFrame){
+        frame.title='Mapa NOAA de frentes — '+domains[domain].label+' — GFS '+cycle;
+        frame.src=domains[domain].urls[cycle];
+      }
+    }
+    document.querySelectorAll('[data-domain]').forEach(b=>b.addEventListener('click',()=>{
+      if(domain!==b.dataset.domain){domain=b.dataset.domain;update(true);}
+    }));
+    document.querySelectorAll('[data-cycle]').forEach(b=>b.addEventListener('click',()=>{
+      if(cycle!==b.dataset.cycle){cycle=b.dataset.cycle;update(true);}
+    }));
+    document.getElementById('toggleParameters').addEventListener('click',e=>{
+      if(matchMedia('(max-width:760px)').matches){const el=document.getElementById('parameters');const open=el.classList.toggle('is-open');e.currentTarget.setAttribute('aria-pressed',String(open));}
+      else{layout.classList.toggle('left-hidden');e.currentTarget.setAttribute('aria-pressed',String(layout.classList.contains('left-hidden')));}
+    });
+    document.getElementById('toggleDomains').addEventListener('click',e=>{
+      if(matchMedia('(max-width:760px)').matches){const el=document.getElementById('domains');const open=el.classList.toggle('is-open');e.currentTarget.setAttribute('aria-pressed',String(open));}
+      else{layout.classList.toggle('right-hidden');e.currentTarget.setAttribute('aria-pressed',String(layout.classList.contains('right-hidden')));}
+    });
+    document.getElementById('fullscreenMap').addEventListener('click',async()=>{
+      const target=document.getElementById('mapPanel');
+      try{if(document.fullscreenElement)await document.exitFullscreen();else await target.requestFullscreen();}
+      catch(_){window.open(domains[domain].urls[cycle],'_blank','noopener,noreferrer');}
+    });
+    const modal=document.getElementById('legendModal');
+    document.getElementById('openLegend').addEventListener('click',()=>{modal.hidden=false;document.getElementById('closeLegend').focus();});
+    document.getElementById('closeLegend').addEventListener('click',()=>{modal.hidden=true;});
+    modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.hidden=true;});
+    update(true);
+    const menuButton=document.getElementById('mobileMenuButton'),mobileNav=document.getElementById('mobile-nav');
+    if(menuButton&&mobileNav){menuButton.addEventListener('click',()=>{const expanded=menuButton.getAttribute('aria-expanded')==='true';menuButton.setAttribute('aria-expanded',String(!expanded));mobileNav.hidden=expanded;});mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{mobileNav.hidden=true;menuButton.setAttribute('aria-expanded','false');}));}
+  })();
+  </script>
+</body>
+</html>

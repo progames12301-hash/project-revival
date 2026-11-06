@@ -1,0 +1,9 @@
+[
+  {"capability":"static pages, css, js, radar modules, images","source":"SideralV3 HTML/CSS/JS","outcome":"migrate unchanged into public/","status":"migrated","next_action":"none"},
+  {"capability":"home page","source":"index.html","outcome":"/ redirects to /index.html","status":"migrated","next_action":"none"},
+  {"capability":"API proxy to sideral-backend.onrender.com and CPTEC nowcasting","source":"worker.js","outcome":"TanStack server route /api/$ with same paths, retries, CORS","status":"migrated","next_action":"none"},
+  {"capability":"login/cadastro","source":"js/login.js","outcome":"demo only (localStorage), kept as-is","status":"migrated","next_action":"real accounts only if the user requests"},
+  {"capability":"database/records/auth identities","source":"none detected","outcome":"not applicable","status":"verified","next_action":"none"},
+  {"capability":"consulta.zip (69 MB nested archive)","source":"archive root","outcome":"excluded","status":"pending","next_action":"ask user whether it is needed"},
+  {"capability":"secrets","source":"none detected","outcome":"not applicable","status":"verified","next_action":"none"}
+]

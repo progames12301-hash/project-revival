@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Madden-Julian Oscillation (MJO) | Sideral V3</title>
+<meta name="description" content="Monitoramento e previsão da Oscilação Madden-Julian com produtos gráficos do NOAA/CPC.">
+<meta name="theme-color" content="#20242c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="icon" href="favicon.png" type="image/png">
+<style>
+:root{color-scheme:dark;--bg:#171a20;--panel:#22262e;--panel2:#2b3039;--edge:rgba(255,255,255,.09);--ink:#edf1f7;--muted:#9ba7b7;--red:#ed3448}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);font-family:"DM Sans",Arial,sans-serif;overflow:hidden}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}.container-sideral{width:min(100% - 48px,1480px);margin-inline:auto}
+.site-header{position:relative;z-index:10;background:#20242c;border-bottom:1px solid rgba(255,255,255,.08)}.header-inner{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding-block:10px}.brand-lockup{display:flex;align-items:center;gap:11px}.brand{display:inline-flex;align-items:center}.brand-logo{display:block;width:150px;height:auto;max-height:55px;object-fit:contain}.root-sign,.root-bar{fill:none;stroke:var(--red);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.root-value{fill:var(--red);font:700 16px Manrope,sans-serif}.header-nav{display:flex;align-items:center;justify-content:center;gap:clamp(14px,2vw,32px);flex:1}.header-nav a,.mobile-nav a{color:#e8edf5;font-size:12px;font-weight:700;text-decoration:none}.header-nav a:hover,.mobile-nav a:hover{color:#ff7a87}.header-actions{display:flex;align-items:center}.mobile-menu-button,.mobile-nav{display:none}
+.app{height:calc(100vh - 78px);min-height:320px;display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:48px minmax(0,1fr);background:#171a20}.toolbar{grid-column:1/-1;display:flex;align-items:center;gap:7px;padding:6px 12px;background:#262b34;border-bottom:1px solid #11151b;min-width:0}.tool-btn{display:inline-grid;place-items:center;flex:0 0 auto;min-width:33px;height:32px;padding:0 9px;background:transparent;color:#eaf0f8;border:1px solid transparent;border-radius:3px;font-weight:700}.tool-btn:hover,.tool-btn[aria-pressed=true]{background:rgba(237,52,72,.15);border-color:rgba(237,52,72,.45)}.tool-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.toolbar-spacer{flex:1}.counter{font-size:11px;font-weight:800;color:#eaf0f8;white-space:nowrap}.sidebar{min-width:0;overflow:auto;background:#22262e;border-right:1px solid rgba(0,0,0,.3)}.sidebar-heading{padding:17px 16px;background:#2b3039;border-bottom:1px solid var(--edge)}.sidebar-heading h1{margin:0;font:800 15px/1.25 Manrope,sans-serif;letter-spacing:-.03em}.sidebar-heading p{margin:6px 0 0;color:#9ba7b7;font-size:11px}.sidebar-section{padding:13px 10px;border-bottom:1px solid var(--edge)}.section-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 6px 8px;color:#9ba6b6;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.section-toggle{width:calc(100% - 12px);padding:0;margin-inline:6px 6px;background:transparent;border:0;text-align:left;cursor:pointer}.section-toggle .chevron{color:#637286;transition:transform .15s ease}.section-toggle[aria-expanded="true"] .chevron{transform:rotate(180deg)}.section-content[hidden]{display:none!important}.choice{display:flex;align-items:center;gap:9px;width:100%;min-height:35px;margin:0 0 2px;padding:8px 9px;background:transparent;color:#cbd3df;border:1px solid transparent;border-radius:3px;text-align:left;font-size:12px;font-weight:650}.choice:hover{background:#2b3039}.choice[aria-pressed=true]{color:#fff;background:rgba(237,52,72,.14);border-color:rgba(237,52,72,.3);box-shadow:inset 3px 0 0 var(--red)}.choice-dot{width:7px;height:7px;border-radius:50%;background:#667487;flex:0 0 auto}.choice[aria-pressed=true] .choice-dot{background:var(--red)}.choice-text{flex:1;line-height:1.25}
+.map-panel{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;background:#15181e;overflow:hidden}.map-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:7px 13px;background:#1e222a;border-bottom:1px solid var(--edge)}.map-title{font:800 12px Manrope,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.map-actions{display:flex;align-items:center;gap:4px}.map-stage{position:relative;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;overflow:auto;background:#1a1e25}.map-image{display:block;width:100%;height:100%;object-fit:contain;background:#fff}.map-image[hidden]{display:none!important}.map-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 12px;color:#d8dfeb;background:rgba(26,30,38,.88);border:1px solid rgba(255,255,255,.1);border-radius:3px;font-size:11px;text-align:center;white-space:normal;max-width:min(360px,90%)}.map-status[hidden]{display:none!important}.status-retry{display:block;margin:8px auto 0;padding:6px 10px;background:rgba(237,52,72,.15);border:1px solid rgba(237,52,72,.4);border-radius:3px;color:#fff;font-size:11px}
+@media(max-width:900px){.header-inner{gap:12px}.brand-logo{width:125px}.header-nav{gap:12px}.header-nav a{font-size:11px}.app{grid-template-columns:250px minmax(0,1fr)}}
+@media(max-width:700px){html,body{height:auto;min-height:100%;overflow:auto}.container-sideral{width:calc(100% - 26px)}.header-inner{min-height:66px}.brand-logo{width:115px;max-height:42px}.root-mark{width:30px}.header-nav{display:none}.mobile-menu-button{display:inline-grid;place-items:center;width:36px;height:36px;background:transparent;color:#fff;border:1px solid #48505c;border-radius:3px}.mobile-nav:not([hidden]){display:flex;flex-direction:column;padding:8px 16px 12px;border-top:1px solid var(--edge)}.mobile-nav a{padding:9px 0}.app{height:auto;min-height:calc(100dvh - 66px);grid-template-columns:minmax(0,1fr);grid-template-rows:48px minmax(0,auto) minmax(58vh,1fr);overflow:visible}.toolbar{grid-column:1;padding:5px 6px;gap:4px;flex-wrap:wrap}.sidebar{grid-row:2;max-height:52vh;overflow:auto;border-right:0;border-bottom:1px solid var(--edge)}.sidebar-section{padding:10px}.map-panel{grid-row:3;min-height:58vh}.map-stage{min-height:58vh}.tool-btn{min-width:29px;height:30px;padding-inline:6px}.map-image{min-height:56vh}}
+@media(max-width:420px){.brand-logo{width:104px}.root-mark{display:none}.header-nav{display:none}.toolbar{gap:2px;padding-inline:3px}.tool-btn{min-width:28px}.counter{font-size:10px}}
+</style>
+<link rel="stylesheet" href="css/site-header.css">
+</head>
+<body>
+<header class="site-header"><div class="container-sideral header-inner"><div class="brand-lockup"><a class="brand" href="index.html" aria-label="Sideral Meteorologia"><img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213"></a><svg class="root-mark" viewBox="0 0 40 26" width="40" height="26" role="img" aria-label="Sideral V3"><path class="root-sign" d="M1 15 H5.5 L8.5 23.5 L15 2"></path><path class="root-bar" d="M14.2 2 H31.5"></path><text class="root-value" x="23" y="21.5">3</text></svg></div><nav class="header-nav" aria-label="Navegação principal"><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav><div class="header-actions"><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button></div></div><nav class="mobile-nav" id="mobile-nav" hidden><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav></header>
+<main class="app" id="mjoApp">
+<div class="toolbar" role="toolbar" aria-label="Controles MJO">
+<button class="tool-btn" id="fullscreen" title="Tela cheia" aria-label="Tela cheia"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+<button class="tool-btn" id="toggleSidebar" title="Mostrar/ocultar painel" aria-label="Mostrar ou ocultar painel" aria-pressed="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M9 4v16"/></svg></button>
+<button class="tool-btn" id="refresh" title="Atualizar gráfico" aria-label="Atualizar gráfico"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/></svg></button>
+<div class="toolbar-spacer"></div><span class="counter" id="counter">1/22</span>
+<button class="tool-btn" id="openImage" title="Abrir imagem original" aria-label="Abrir imagem original"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg></button>
+<button class="tool-btn" id="download" title="Baixar gráfico" aria-label="Baixar gráfico"><svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 20h14"/></svg></button>
+</div>
+<aside class="sidebar" id="sidebar"><div class="sidebar-heading"><h1>Madden-Julian Oscillation (MJO)</h1><p id="selectedSource">GEFSv16</p></div>
+<section class="sidebar-section"><button class="section-label section-toggle" id="toggleForecast" type="button" aria-expanded="true" aria-controls="forecastChoices">Previsão MJO <span class="chevron">▾</span></button><div class="section-content" id="forecastChoices">
+<button class="choice" data-id="gfs16" aria-pressed="true"><span class="choice-dot"></span><span class="choice-text">GFSv16</span></button>
+<button class="choice" data-id="gefs12"><span class="choice-dot"></span><span class="choice-text">GEFSv12 [M]</span></button>
+<button class="choice" data-id="gefs12bc"><span class="choice-dot"></span><span class="choice-text">GEFSv12 [M] Bias Corrected</span></button>
+<button class="choice" data-id="gefs12ext"><span class="choice-dot"></span><span class="choice-text">GEFSv12 Extended [M]</span></button>
+<button class="choice" data-id="cfsv2bc"><span class="choice-dot"></span><span class="choice-text">CFSv2 [M] Bias Corrected</span></button>
+<button class="choice" data-id="canm"><span class="choice-dot"></span><span class="choice-text">CANM [M]</span></button>
+<button class="choice" data-id="jman"><span class="choice-dot"></span><span class="choice-text">JMAN [M]</span></button>
+<button class="choice" data-id="ecmwf"><span class="choice-dot"></span><span class="choice-text">ECMWF [M]</span></button>
+<button class="choice" data-id="ecmwfbc"><span class="choice-dot"></span><span class="choice-text">ECMWF [M] Bias Corrected</span></button>
+<button class="choice" data-id="ecmwfext"><span class="choice-dot"></span><span class="choice-text">ECMWF Extended [M]</span></button>
+<button class="choice" data-id="ecmwfextbc"><span class="choice-dot"></span><span class="choice-text">ECMWF Extended [M] Bias Corrected</span></button>
+<button class="choice" data-id="boms1"><span class="choice-dot"></span><span class="choice-text">BOM ACCESS-S1 [M]</span></button>
+<button class="choice" data-id="boms1bc"><span class="choice-dot"></span><span class="choice-text">BOM ACCESS-S1 [M] Bias Corrected</span></button>
+<button class="choice" data-id="stat"><span class="choice-dot"></span><span class="choice-text">Modelos Estatísticos NCEP/NOAA</span></button>
+</div></section>
+<section class="sidebar-section"><button class="section-label section-toggle" id="toggleObservation" type="button" aria-expanded="false" aria-controls="observationChoices">Observação MJO <span class="chevron">▾</span></button><div class="section-content" id="observationChoices" hidden>
+<button class="choice" data-id="obs40"><span class="choice-dot"></span><span class="choice-text">RMM · 40 dias</span></button>
+<button class="choice" data-id="obs90"><span class="choice-dot"></span><span class="choice-text">RMM · 90 dias</span></button>
+<button class="choice" data-id="cpcindex"><span class="choice-dot"></span><span class="choice-text">Índice MJO CPC</span></button>
+<button class="choice" data-id="mjoamp"><span class="choice-dot"></span><span class="choice-text">Amplitude MJO</span></button>
+<button class="choice" data-id="gfsmap"><span class="choice-dot"></span><span class="choice-text">GEFS · Mapa OLR</span></button>
+<button class="choice" data-id="gfshov"><span class="choice-dot"></span><span class="choice-text">GEFS · Time-Lon</span></button>
+<button class="choice" data-id="camap"><span class="choice-dot"></span><span class="choice-text">Estatístico · Mapa OLR</span></button>
+<button class="choice" data-id="cahov"><span class="choice-dot"></span><span class="choice-text">Estatístico · Time-Lon</span></button>
+</div></section></aside>
+<section class="map-panel" id="mapPanel"><div class="map-head"><span class="map-title" id="mapTitle">MJO · GFSv16</span><div class="map-actions"></div></div><div class="map-stage"><img class="map-image" id="mapImage" alt="Gráfico MJO do NOAA/CPC" decoding="async" referrerpolicy="no-referrer"><div class="map-status" id="status" hidden><span id="statusText">Imagem indisponível</span><button type="button" class="status-retry" id="retry">Tentar novamente</button></div></div></section>
+</main>
+<script>
+(()=>{'use strict';
+const BASE='https://www.cpc.ncep.noaa.gov/products/precip/mjo/img/';
+const INDEX='https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_mjo_index/tm_order_2.gif';
+const products={
+ gfs16:{label:'GFSv16',url:BASE+'NGFS.png'},
+ gefs12:{label:'GEFSv12 [M]',url:BASE+'GEFS.png'},
+ gefs12bc:{label:'GEFSv12 [M] Bias Corrected',url:BASE+'GEFS_BC.png'},
+ gefs12ext:{label:'GEFSv12 Extended [M]',url:BASE+'GMON.png'},
+ cfsv2bc:{label:'CFSv2 [M] Bias Corrected',url:BASE+'NCFS.png'},
+ canm:{label:'CANM [M]',url:BASE+'CANM.png'},
+ jman:{label:'JMAN [M]',url:BASE+'JMAN.png'},
+ ecmwf:{label:'ECMWF [M]',url:BASE+'ECMF.png'},
+ ecmwfbc:{label:'ECMWF [M] Bias Corrected',url:BASE+'ECMF_BC.png'},
+ ecmwfext:{label:'ECMWF Extended [M]',url:BASE+'EMON.png'},
+ ecmwfextbc:{label:'ECMWF Extended [M] Bias Corrected',url:BASE+'EMON_BC.png'},
+ boms1:{label:'BOM ACCESS-S1 [M]',url:BASE+'BOMM.png'},
+ boms1bc:{label:'BOM ACCESS-S1 [M] Bias Corrected',url:BASE+'BOMM_BC.png'},
+ stat:{label:'Modelos Estatísticos NCEP/NOAA',url:BASE+'rmm_stat.png'},
+ obs40:{label:'RMM · 40 dias',url:BASE+'rmm_obs40.png'},
+ obs90:{label:'RMM · 90 dias',url:BASE+'rmm_obs90.png'},
+ cpcindex:{label:'Índice MJO CPC',url:INDEX},
+ mjoamp:{label:'Amplitude MJO',url:BASE+'rmm_amplitude_realtime.png'},
+ gfsmap:{label:'GEFS · Mapa OLR',url:BASE+'recon_gfs_map.png'},
+ gfshov:{label:'GEFS · Time-Lon',url:BASE+'recon_gfs_hov.png'},
+ camap:{label:'Estatístico · Mapa OLR',url:BASE+'recon_ca_map.png'},
+ cahov:{label:'Estatístico · Time-Lon',url:BASE+'recon_ca_hov.png'}
+};
+let selected='gfs16',requestId=0;const image=document.getElementById('mapImage'),status=document.getElementById('status'),statusText=document.getElementById('statusText'),counter=document.getElementById('counter'),title=document.getElementById('mapTitle'),source=document.getElementById('selectedSource');
+function render(){const p=products[selected];if(!p)return;const id=++requestId;document.querySelectorAll('[data-id]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===selected)));source.textContent=p.label;title.textContent='MJO · '+p.label;counter.textContent=(Object.keys(products).indexOf(selected)+1)+'/'+Object.keys(products).length;status.hidden=true;image.hidden=true;image.onload=null;image.onerror=null;image.alt=p.label+' — NOAA/CPC';image.onload=()=>{if(id!==requestId)return;image.hidden=false;status.hidden=true;};image.onerror=()=>{if(id!==requestId)return;image.hidden=true;statusText.textContent='Imagem indisponível';status.hidden=false;};image.src=p.url+(p.url.includes('?')?'&':'?')+'sideral='+Date.now();}
+document.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.id;render();}));
+document.getElementById('refresh').addEventListener('click',render);
+function toggleGroup(buttonId,contentId){const button=document.getElementById(buttonId),content=document.getElementById(contentId);button.addEventListener('click',()=>{const open=button.getAttribute('aria-expanded')!=='true';button.setAttribute('aria-expanded',String(open));content.hidden=!open;});}
+toggleGroup('toggleForecast','forecastChoices');toggleGroup('toggleObservation','observationChoices');
+document.getElementById('retry').addEventListener('click',render);
+document.getElementById('fullscreen').addEventListener('click',async()=>{try{const el=document.getElementById('mapPanel');if(!document.fullscreenElement)await el.requestFullscreen();else await document.exitFullscreen();}catch{}});
+document.getElementById('toggleSidebar').addEventListener('click',e=>{const side=document.getElementById('sidebar'),hidden=side.style.display==='none';side.style.display=hidden?'':'none';e.currentTarget.setAttribute('aria-pressed',String(hidden));document.getElementById('mjoApp').style.gridTemplateColumns=hidden?'300px minmax(0,1fr)':'minmax(0,1fr)';});
+document.getElementById('openImage').addEventListener('click',()=>{const p=products[selected];if(p)window.open(p.url,'_blank','noopener,noreferrer');});
+document.getElementById('download').addEventListener('click',async()=>{const p=products[selected];if(!p)return;try{const response=await fetch(p.url,{mode:'cors',cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const blob=await response.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sideral-mjo-'+selected+(p.url.toLowerCase().endsWith('.gif')?'.gif':'.png');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}catch{window.open(p.url,'_blank','noopener,noreferrer');}});
+document.getElementById('mobileMenuButton').addEventListener('click',()=>{const nav=document.getElementById('mobile-nav'),button=document.getElementById('mobileMenuButton'),open=nav.hidden;nav.hidden=!open;button.setAttribute('aria-expanded',String(open));});
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151d23">
+  <title>Raios GLM ao Vivo | Sideral Meteorologia</title>
+  <meta name="description" content="Monitoramento de descargas elétricas GLM no mapa de satélite da Sideral Meteorologia.">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link id="leaflet-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" onerror="this.onerror=null;this.removeAttribute('integrity');this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';">
+  <style>
+    :root{color-scheme:dark;--hud:#121a20ed;--hud2:#202a31f2;--stroke:#43515a;--text:#f5f7f8;--sub:#adb8be;--cyan:#27c3ed;--orange:#ff9b22;--red:#f63139}
+    *{box-sizing:border-box}html,body{width:100%;height:100%;min-height:100%;margin:0;overflow:hidden;background:#151d23;font-family:Inter,Arial,Helvetica,sans-serif}button,select,input{font:inherit}button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #27c3ed;outline-offset:2px}
+    .app{position:relative;width:100%;height:100vh;height:100dvh;overflow:hidden;background:#151d23}#map{position:absolute;inset:15px 4px 4px;width:auto;height:auto;min-width:0;min-height:0;border-radius:8px;overflow:hidden;background:#dce4e7;z-index:1}.leaflet-container{width:100%;height:100%;font:12px Arial,Helvetica,sans-serif;background:#dce4e7;outline:none;touch-action:pan-x pan-y}.leaflet-control-container .leaflet-top{display:none}.leaflet-control-container .leaflet-bottom{display:block}.leaflet-control-container .leaflet-control-attribution{display:block}.leaflet-tile{max-width:none!important;max-height:none!important}.leaflet-container img.leaflet-tile{max-width:none!important;max-height:none!important}.leaflet-pane.base-pane{filter:none!important}
+    .glass{color:var(--text);background:var(--hud);border:1px solid #35434c;box-shadow:0 2px 8px #0004;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+    .age-ribbon{position:absolute;z-index:20;left:0;right:0;top:0;height:15px;display:grid;grid-template-columns:repeat(3,1fr);color:#fff;text-align:center;font-size:10px;line-height:15px;text-shadow:0 1px 2px #000b}.age{height:15px}.age b{display:block;font-weight:700}.age-1{background:#ed0a10}.age-2{background:#e4b500}.age-3{background:#009d00}.age-4{background:#1779d4}
+    .counter{position:absolute;z-index:25;top:22px;left:10px;min-height:34px;display:flex;align-items:center;gap:7px;padding:0 10px;border-radius:5px;font-size:11px}.bolt{color:#ffc629;font-size:20px;line-height:1;text-shadow:0 0 5px #ffba00}.counter strong{color:#ffc62a;font-size:12px;font-weight:800}.counter-divider{height:16px;width:1px;background:#58656c}.counter-range{color:#e0e5e7;font-size:10px;white-space:nowrap}
+    .main-nav{position:absolute;z-index:25;top:22px;left:50%;transform:translateX(-50%);height:36px;display:flex;align-items:stretch;gap:2px;border-radius:8px;padding:4px 5px;white-space:nowrap}.nav-item{height:26px;border:1px solid #52616b;border-radius:5px;background:#344047;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 14px;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:default}.nav-item svg,.nav-back svg{width:15px;height:15px;stroke:#27c3ed;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.nav-back{height:26px;border:1px solid #52616b;border-radius:5px;background:#26333b;color:#eaf3f6;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:10px;font-weight:800;text-decoration:none}.nav-back:hover{background:#35464f;color:#fff}
+    .period{position:absolute;z-index:25;top:22px;right:10px;height:34px;border-radius:5px;padding:0 9px;display:flex;align-items:center;gap:7px}.period label{font-size:10px;color:#b9c5cc;font-weight:800;letter-spacing:.05em}.period select{appearance:none;border:0;outline:0;background:transparent;color:#f5f7f8;font-size:11px;font-weight:800;cursor:pointer}.period option{background:#182127;color:white}.period svg{height:13px;width:13px;stroke:#dce4e8;fill:none;stroke-width:2;pointer-events:none}
+    .source-panel{position:absolute;z-index:25;top:68px;left:10px;width:205px;border-radius:7px;overflow:hidden}.source-head{padding:11px 12px;background:#202a31;border-bottom:1px solid #43515a;display:flex;align-items:center;justify-content:space-between}.source-head strong{font-size:11px;letter-spacing:.08em}.source-head button{width:22px;height:22px;border:0;border-radius:4px;background:transparent;color:#dce4e8;font-size:17px}.source-head button:hover{background:#ffffff15}.source-body{padding:8px;display:grid;gap:7px}.source-row{min-width:0;display:grid;grid-template-columns:15px minmax(0,1fr) auto;align-items:center;gap:7px;padding:8px;background:#202a31b8;border:1px solid #ffffff13;border-radius:5px}.source-row input{width:14px;height:14px;margin:0;accent-color:#27c3ed}.source-copy{min-width:0}.source-copy strong{display:block;font-size:11px}.source-copy small{display:block;margin-top:3px;color:#adb8be;font-size:9px}.source-status{font-size:9px;color:#adb8be;text-align:right;max-width:67px;line-height:1.25}.source-status.ok{color:#62e7a0}.source-status.loading{color:#ffd166}.source-status.error{color:#ff7777}.source-foot{padding:8px 10px;color:#aab6bd;font-size:9px;border-top:1px solid #ffffff14;line-height:1.35}
+    .layer-toggle{position:absolute;z-index:25;top:68px;right:10px;width:39px;height:39px;border-radius:50%;border:1px solid #9de4f7;background:#152630ec;box-shadow:0 2px 8px #0003;display:grid;place-items:center;color:#38ccf3;cursor:pointer}.layer-toggle svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}.layer-toggle[aria-expanded=true]{background:#25495a}.layer-menu{position:absolute;z-index:40;top:113px;right:10px;border-radius:6px;padding:5px;display:grid;gap:3px;min-width:135px}.layer-menu[hidden]{display:none}.layer-menu button{background:transparent;border:0;border-radius:4px;color:white;text-align:left;padding:8px 10px;font-size:11px;cursor:pointer}.layer-menu button:hover,.layer-menu button[aria-pressed=true]{background:#35434b;color:#51d7f8}
+    .map-tools{position:absolute;z-index:25;right:10px;top:69%;transform:translateY(-50%);width:36px;display:flex;align-items:center;flex-direction:column;padding:4px 0;border-radius:11px;background:#17232ce8;box-shadow:0 2px 8px #0004}.map-tools button{width:33px;height:32px;border:0;background:transparent;color:#e6edf0;display:grid;place-items:center;cursor:pointer;padding:0}.map-tools button:hover{color:#43d0fa;background:#ffffff12}.map-tools svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.tool-divider{height:1px;width:19px;background:#52616a;margin:2px 0}
+    .timestamp{position:absolute;z-index:25;bottom:10px;left:50%;transform:translateX(-50%);min-height:60px;min-width:360px;display:flex;align-items:center;gap:11px;padding:7px 8px 7px 12px;border-radius:22px;background:#16222cf2;box-shadow:0 3px 13px #0005}.live-state{width:47px;display:flex;align-items:center;gap:5px;color:#ff4148;font-size:9px;letter-spacing:.2px}.live-dot{width:7px;height:7px;flex:none;border-radius:50%;background:#ff3a42;box-shadow:0 0 5px #ff3a42;animation:pulse 1.3s infinite}.timestamp-data{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}.age-slider-row{display:grid;grid-template-columns:38px minmax(100px,1fr) 40px;align-items:center;gap:7px}.age-slider-row label{font-size:8px;color:#9ba8b1}.age-slider-row input{width:100%;height:13px;accent-color:#27c3ed;cursor:pointer}.age-slider-row output{color:#e9edf0;font-size:9px;text-align:right;white-space:nowrap}.time-row{height:13px;display:flex;align-items:center;gap:7px;white-space:nowrap}.source-name{width:34px;color:#9ba8b1;font-size:8px;letter-spacing:.2px}.time-row time{color:#e9edf0;font-size:10px;font-weight:700;letter-spacing:.1px}.time-row:nth-child(2) time{color:var(--orange)}.collapse-clock{width:25px;height:25px;flex:none;border:0;border-radius:50%;background:#1f2d37;color:#f0f3f5;display:grid;place-items:center;cursor:pointer}.collapse-clock svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.timestamp.collapsed{min-width:88px;width:88px;justify-content:space-between}.timestamp.collapsed .timestamp-data,.timestamp.collapsed .live-state{display:none}.timestamp.collapsed .collapse-clock{margin-left:auto}
+    .toast{position:absolute;z-index:60;left:50%;bottom:64px;transform:translate(-50%,10px);max-width:calc(100% - 24px);background:#17232cf5;color:#eef4f6;border:1px solid #43525b;border-radius:5px;padding:9px 12px;font-size:11px;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @keyframes pulse{50%{opacity:.35;box-shadow:0 0 1px #ff3a42}}.strike-marker{filter:drop-shadow(0 0 4px currentColor)}
+    @media(max-width:800px){.main-nav{top:62px;height:32px}.period{top:22px;right:7px}.counter{top:22px;left:7px}.source-panel{top:105px;left:7px;width:190px}.map-tools{right:7px;top:auto;bottom:83px;transform:none}.timestamp{bottom:7px;min-width:283px;max-width:calc(100% - 20px);min-height:62px;padding:7px 7px 7px 9px;gap:6px}.source-name{width:32px}.time-row time{font-size:9px}.collapse-clock{width:23px;height:23px}.age-slider-row{grid-template-columns:32px minmax(70px,1fr) 38px;gap:5px}}
+    @media(max-width:480px){.main-nav{left:50%;right:auto;transform:translateX(-50%);top:62px;gap:3px}.nav-item{padding:0 9px;font-size:9px}.nav-back{padding:0 7px;font-size:9px}.counter{top:22px}.source-panel{top:105px;width:178px}.source-head{padding:8px 9px}.source-body{padding:6px}.source-row{padding:7px;gap:5px}.source-status{max-width:54px;font-size:8px}.source-copy strong{font-size:10px}.map-tools{bottom:83px}.timestamp{min-width:268px;max-width:calc(100% - 20px)}.time-row time{font-size:9px}.source-name{font-size:7px;width:30px}.age-slider-row{grid-template-columns:29px minmax(75px,1fr) 34px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Mapa de raios GLM ao vivo">
+    <div id="map" role="application" aria-label="Mapa de satélite com descargas GLM"></div>
+    <header class="age-ribbon" aria-label="Idade das descargas GLM"><div class="age age-1"><b>0–5 min</b></div><div class="age age-2"><b>5–10 min</b></div><div class="age age-3"><b>10–15 min</b></div></header>
+    <button class="counter glass" id="counter" type="button" title="Contagem de descargas GLM"><span class="bolt" aria-hidden="true">ϟ</span><strong id="strike-count">—</strong></button>
+    <nav class="main-nav glass" aria-label="Navegação"><a class="nav-back" href="./indedx.html" title="Voltar ao index do site"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>VOLTAR</span></a><button class="nav-item selected" type="button" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 5.5 13h5L9.8 22 18.5 9.5h-5L13 2Z"/></svg><span>RAIOS AO VIVO</span></button></nav>
+    <section class="source-panel glass" id="source-panel" aria-label="Fonte GLM">
+      <div class="source-head"><strong>GLM</strong><button id="source-collapse" type="button" aria-label="Recolher painel GLM" title="Recolher painel GLM">−</button></div>
+      <div class="source-body" id="source-body">
+        <label class="source-row"><input id="glm-toggle" type="checkbox" checked><span class="source-copy"><strong>GOES-East</strong></span><span id="glm-status" class="source-status loading">Consultando</span></label>
+      </div>
+    </section>
+    <aside class="map-tools glass" aria-label="Ferramentas do mapa">
+      <button type="button" id="refresh" aria-label="Atualizar raios" title="Atualizar raios"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/></svg></button>
+      <button type="button" id="locate" aria-label="Minha localização" title="Minha localização"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></svg></button>
+      <span class="tool-divider"></span>
+      <button type="button" id="zoom-in" aria-label="Aumentar zoom" title="Aumentar zoom"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button type="button" id="zoom-out" aria-label="Diminuir zoom" title="Diminuir zoom"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button type="button" id="fullscreen" aria-label="Tela cheia" title="Tela cheia"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+    </aside>
+    <section class="timestamp glass" id="timestamp" aria-label="Horário GLM"><div class="live-state"><span class="live-dot"></span><b>LIVE</b></div><div class="timestamp-data"><div class="time-row"><span class="source-name">GLM</span><time id="glm-time">—</time></div><div class="age-slider-row"><label for="age-slider">Janela</label><input id="age-slider" type="range" min="1" max="15" step="1" value="15" aria-label="Exibir descargas dos últimos minutos"><output id="age-value" for="age-slider">15 min</output></div></div><button class="collapse-clock" id="collapse-clock" type="button" aria-label="Recolher horário" title="Recolher horário"><svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6"/></svg></button></section>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';s.onload=function(){window.dispatchEvent(new Event('leaflet-ready'))};s.onerror=function(){window.dispatchEvent(new Event('leaflet-failed'))};document.head.appendChild(s);"></script>
+  <script>
+  (() => {
+    'use strict';
+    function startMap(){
+    const API = window.SIDERAL_API_BASE ? String(window.SIDERAL_API_BASE).replace(/\/$/, '') : 'https://sideral-backend.onrender.com';
+    const $ = (id) => document.getElementById(id);
+    const toastEl = $('toast');
+    let toastTimer = 0;
+    const toast = (message) => { toastEl.textContent = message; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3000); };
+    const map = L.map('map', { zoomControl:false, attributionControl:true, preferCanvas:true, zoomSnap:.25, minZoom:3, maxZoom:14, worldCopyJump:false }).setView([-15.6,-52.4],4.5);
+    map.createPane('basePane'); map.getPane('basePane').style.zIndex=250; map.getPane('basePane').classList.add('base-pane');
+    const satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{pane:'basePane',maxZoom:19,updateWhenIdle:true,keepBuffer:3,attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'});
+    satelliteLayer.addTo(map);
+    const attributionStyle=document.createElement('style');attributionStyle.textContent='.leaflet-control-attribution{background:#111b22cc!important;color:#dce5e9!important;font-size:8px!important}.leaflet-control-attribution a{color:#64d8f5!important}';document.head.appendChild(attributionStyle);
+
+    // The tile pane must be recalculated after the browser lays out the viewport,
+    // after address-bar/orientation changes, and after tab/fullscreen transitions.
+    let resizeFrame1=0, resizeFrame2=0;
+    function invalidateMapSize(){
+      cancelAnimationFrame(resizeFrame1); cancelAnimationFrame(resizeFrame2);
+      resizeFrame1=requestAnimationFrame(()=>{
+        resizeFrame2=requestAnimationFrame(()=>map.invalidateSize({pan:false,debounceMoveend:true}));
+      });
+    }
+    map.whenReady(invalidateMapSize);
+    window.addEventListener('resize',invalidateMapSize,{passive:true});
+    window.addEventListener('orientationchange',()=>setTimeout(invalidateMapSize,180),{passive:true});
+    window.addEventListener('pageshow',invalidateMapSize);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden) invalidateMapSize();});
+    if('ResizeObserver' in window){
+      const mapResizeObserver=new ResizeObserver(invalidateMapSize);
+      mapResizeObserver.observe($('map'));
+    }
+
+    satelliteLayer.on('tileerror',()=>console.warn('Falha ao carregar tile de satélite Esri.'));
+
+    const renderer=L.canvas({padding:.35});
+    const glmLayer=L.layerGroup();
+    let refreshing=false; let lastGlmCount=null; let lastGlmTime=''; let latestGlmPoints=[]; let maxAgeMinutes=15;
+
+    const safeTime=(value)=>{
+      if(!value) return 'Sem dados';
+      const raw=String(value); const date=new Date(raw.includes('T')?raw:(raw.includes('Z')?raw:raw.replace(' ','T')+'Z'));
+      if(Number.isNaN(date.getTime())) return raw;
+      return date.toLocaleString('pt-BR',{timeZone:'UTC',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})+' UTC';
+    };
+    async function fetchJson(url,timeout=55000){
+      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),timeout);
+      try { const response=await fetch(url,{cache:'no-store',signal:controller.signal,mode:'cors'}); if(!response.ok) throw new Error('HTTP '+response.status); const type=response.headers.get('content-type')||''; if(!type.toLowerCase().includes('json')) throw new Error('A fonte não retornou JSON.'); return await response.json(); }
+      finally { clearTimeout(timer); }
+    }
+    function status(el,state,message){el.className='source-status '+state;el.textContent=message;}
+    function applyVisibility(){
+      const glmOn=$('glm-toggle').checked;
+      if(glmOn&&!map.hasLayer(glmLayer)) glmLayer.addTo(map);
+      if(!glmOn&&map.hasLayer(glmLayer)) map.removeLayer(glmLayer);
+    }
+    const pointsInBrazil=(lat,lon)=>Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-35.5&&lat<=7.0&&lon>=-75.5&&lon<=-30.0;
+    function glmColor(age){if(age<5)return '#ff3232';if(age<10)return '#ffd43b';return '#35d66f';}
+    function renderGlmPoints(){
+      const next=L.layerGroup(); let count=0;
+      for(const point of latestGlmPoints){
+        const lat=Number(point.lat),lon=Number(point.lon),age=Number(point.ageMinutes);
+        if(!pointsInBrazil(lat,lon)||!Number.isFinite(age)||age<0||age>maxAgeMinutes) continue;
+        const color=glmColor(age);
+        L.circleMarker([lat,lon],{renderer,radius:age<5?4.0:age<10?3.4:2.9,color:'#1a1515',weight:.7,opacity:.95,fillColor:color,fillOpacity:.98,className:'strike-marker'}).bindTooltip('GLM · '+Math.round(age)+' min',{direction:'top',opacity:.92}).addTo(next);
+        count++;
+      }
+      glmLayer.clearLayers(); next.eachLayer(layer=>glmLayer.addLayer(layer));
+      lastGlmCount=count; status($('glm-status'),'ok',count.toLocaleString('pt-BR')+' raios');
+      applyVisibility(); updateCount();
+    }
+    async function loadGlm(){
+      status($('glm-status'),'loading','Consultando');
+      try{
+        const data=await fetchJson(API+'/api/glm/lightning?ts='+Date.now());
+        if(!data||data.status!==true||!Array.isArray(data.points)) throw new Error(data&&data.details?String(data.details):'Resposta GLM inválida.');
+        latestGlmPoints=data.points;
+        lastGlmTime=data.observedAt||''; $('glm-time').textContent=safeTime(lastGlmTime);
+        renderGlmPoints();
+      }catch(error){ console.error('Consulta GLM:',error); status($('glm-status'),'error',error.name==='AbortError'?'Tempo esgotado':'Falhou'); if(!lastGlmTime) $('glm-time').textContent='Sem dados'; throw error; }
+    }
+    function updateCount(){
+      $('strike-count').textContent=Number.isFinite(lastGlmCount)?lastGlmCount.toLocaleString('pt-BR'):'—';
+      $('counter').title='GLM: '+(lastGlmCount===null?'sem dados':lastGlmCount)+' descargas na janela selecionada';
+    }
+    async function refresh(silent=false){
+      if(refreshing)return;refreshing=true;$('refresh').style.opacity='.5';
+      try{await loadGlm();if(!silent)toast('GLM atualizado.');}
+      catch(error){if(!silent)toast('Falha ao consultar GLM.');}
+      finally{refreshing=false;$('refresh').style.opacity='1';}
+    }
+
+
+    $('glm-toggle').addEventListener('change',applyVisibility);
+    $('age-slider').addEventListener('input',()=>{maxAgeMinutes=Number($('age-slider').value);$('age-value').textContent=maxAgeMinutes+' min';renderGlmPoints();});
+    $('refresh').addEventListener('click',()=>refresh(false));
+    $('locate').addEventListener('click',()=>{if(!navigator.geolocation){toast('Localização não disponível neste navegador.');return;}navigator.geolocation.getCurrentPosition(p=>map.flyTo([p.coords.latitude,p.coords.longitude],Math.max(map.getZoom(),6)),()=>toast('Permita a localização no navegador.'),{enableHighAccuracy:true,timeout:10000,maximumAge:60000});});
+    $('zoom-in').addEventListener('click',()=>map.zoomIn()); $('zoom-out').addEventListener('click',()=>map.zoomOut());
+    $('fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await $('map').requestFullscreen();else await document.exitFullscreen();setTimeout(invalidateMapSize,150);}catch{toast('Tela cheia não está disponível.');}});
+    $('source-collapse').addEventListener('click',()=>{const collapsed=$('source-body').hidden;$('source-body').hidden=!collapsed;$('source-collapse').textContent=collapsed?'−':'+';$('source-collapse').setAttribute('aria-label',collapsed?'Recolher painel GLM':'Expandir painel GLM');});
+    $('collapse-clock').addEventListener('click',()=>{const panel=$('timestamp');const collapsed=panel.classList.toggle('collapsed');$('collapse-clock').setAttribute('aria-label',collapsed?'Expandir horários':'Recolher horários');$('collapse-clock').title=collapsed?'Expandir horários':'Recolher horários';document.querySelector('#collapse-clock svg').innerHTML=collapsed?'<path d="m6 10 6 6 6-6"/>':'<path d="m6 14 6-6 6 6"/>';});
+    $('counter').addEventListener('click',()=>map.fitBounds([[-35.5,-75.5],[7,-30]],{padding:[30,30]}));
+    refresh(true); setInterval(()=>refresh(true),120000); document.addEventListener('fullscreenchange',()=>setTimeout(invalidateMapSize,150));
+    }
+    if(window.L){
+      startMap();
+    }else{
+      const fallbackTimedOut=setTimeout(()=>{
+        if(window.L) return;
+        const toastNode=document.getElementById('toast');
+        if(toastNode){toastNode.textContent='O mapa não carregou. Verifique a conexão.';toastNode.classList.add('show');}
+      },9000);
+      window.addEventListener('leaflet-ready',()=>{clearTimeout(fallbackTimedOut);if(window.L)startMap();},{once:true});
+      window.addEventListener('leaflet-failed',()=>{clearTimeout(fallbackTimedOut);const toastNode=document.getElementById('toast');if(toastNode){toastNode.textContent='Não foi possível carregar a biblioteca Leaflet.';toastNode.classList.add('show');}},{once:true});
+    }
+  })();
+  </script>
+</body>
+</html>

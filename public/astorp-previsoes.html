@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Previsão Probabilística ASTORP | Sideral Meteorologia</title>
+  <meta name="description" content="Mapas de previsão convectiva ASTORP para a América do Sul, com SPC Levels, SPC Hazards e ESTOFEX Levels.">
+  <meta name="author" content="Sideral Meteorologia">
+  <meta name="theme-color" content="#171a20">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --cp-bg: #171a20;
+      --cp-panel: #22262e;
+      --cp-panel-2: #292e37;
+      --cp-border: rgba(255,255,255,.085);
+      --cp-text: #edf1f7;
+      --cp-muted: #98a3b3;
+      --cp-red: #ed3448;
+      --cp-red-soft: rgba(237,52,72,.14);
+      --cp-radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body.cptec-page { margin: 0; min-height: 100vh; background: var(--cp-bg); color: var(--cp-text); font-family: "DM Sans", Arial, sans-serif; overflow-x: hidden; }
+    body.cptec-page button, body.cptec-page a { -webkit-tap-highlight-color: transparent; }
+    body.cptec-page button { font: inherit; }
+    body.cptec-page a { color: inherit; }
+
+    /* Cabeçalho Sideral baseado no header do index.html */
+    .cptec-page .site-header { position: relative; z-index: 20; width: 100%; background: #20242c; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .cptec-page .site-header .header-inner { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 30px; padding-top: 10px; padding-bottom: 10px; }
+    .cptec-page .container-sideral { width: min(100% - 48px, 1480px); margin-inline: auto; }
+    .cptec-page .brand-lockup { display: flex; align-items: center; gap: 11px; flex: 0 0 auto; }
+    .cptec-page .brand { display: inline-flex; align-items: center; text-decoration: none; }
+    .cptec-page .brand-logo { display: block; width: 150px; height: auto; max-height: 55px; object-fit: contain; }
+    .cptec-page .root-mark { flex: 0 0 auto; overflow: visible; }
+    .cptec-page .root-sign, .cptec-page .root-bar { fill: none; stroke: #ed3448; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .cptec-page .root-value { fill: #ed3448; font: 700 16px "Manrope", sans-serif; }
+    .cptec-page .header-nav { display: flex; align-items: center; justify-content: center; gap: clamp(16px, 2.5vw, 38px); flex: 1 1 auto; }
+    .cptec-page .header-nav a, .cptec-page .mobile-nav a { color: #e8edf5; font-size: 13px; font-weight: 650; text-decoration: none; transition: color .18s ease; }
+    .cptec-page .header-nav a:hover, .cptec-page .mobile-nav a:hover { color: #ff7a87; }
+    .cptec-page .header-actions { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+    .cptec-page .language { display: flex; align-items: center; gap: 6px; color: #c7d0dc; font-size: 12px; font-weight: 700; }
+    .cptec-page .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid transparent; text-decoration: none; cursor: pointer; font-weight: 700; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+    .cptec-page .btn:hover { transform: translateY(-1px); }
+    .cptec-page .btn-sideral { color: #fff; background: #e63247; border-color: #e63247; }
+    .cptec-page .btn-sideral:hover { background: #cb293c; border-color: #cb293c; }
+    .cptec-page .btn-md { min-height: 39px; padding: 9px 14px; border-radius: 7px; font-size: 12px; }
+    .cptec-page .btn-navigation { background: transparent; color: #e6edf7; border-color: rgba(255,255,255,.14); }
+    .cptec-page .btn-navigation:hover { background: rgba(255,255,255,.06); }
+    .cptec-page .btn-icon { width: 40px; min-width: 40px; height: 40px; padding: 0; }
+    .cptec-page .mobile-menu-button, .cptec-page .mobile-nav { display: none; }
+
+    .cptec-app { height: calc(100vh - 78px); min-height: 620px; display: flex; flex-direction: column; }
+    .forecast-toolbar { min-height: 49px; display: grid; grid-template-columns: 300px minmax(260px, 1fr); align-items: stretch; background: #262b34; border-bottom: 1px solid #11151b; box-shadow: 0 4px 18px rgba(0,0,0,.12); }
+    .toolbar-cluster { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 12px; }
+    .toolbar-cluster + .toolbar-cluster { border-left: 1px solid var(--cp-border); }
+    .toolbar-button { display: inline-grid; place-items: center; width: 33px; height: 32px; flex: 0 0 auto; padding: 0; color: #d1d9e4; background: transparent; border: 1px solid transparent; border-radius: 5px; cursor: pointer; }
+    .toolbar-button:hover, .toolbar-button[aria-pressed="true"] { background: rgba(237,52,72,.14); border-color: rgba(237,52,72,.35); color: #fff; }
+    .toolbar-button svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .toolbar-divider { width: 1px; height: 24px; margin-inline: 3px; background: rgba(255,255,255,.11); }
+    .timeline-cluster { display: flex; align-items: center; gap: 13px; }
+    .timeline-label { color: #aeb9c8; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    .timeline-range { width: 100%; min-width: 70px; accent-color: var(--cp-red); cursor: pointer; }
+    .timeline-current { min-width: 50px; color: #fff; font-size: 12px; font-weight: 800; text-align: right; white-space: nowrap; }
+    .forecast-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); flex: 1; min-height: 0; }
+    .forecast-sidebar { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 0; min-width: 0; background: #22262e; border-right: 1px solid rgba(0,0,0,.25); }
+    .sidebar-heading { padding: 17px 18px 15px; border-bottom: 1px solid var(--cp-border); background: #2b3039; }
+    .eyebrow { display: block; margin: 0 0 7px; color: #8b9bad; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .sidebar-heading h1 { margin: 0; font-family: Manrope, sans-serif; font-size: 17px; line-height: 1.25; letter-spacing: -.03em; }
+    .sidebar-heading p { margin: 7px 0 0; max-width: 245px; color: #9ba7b7; font-size: 11px; line-height: 1.55; }
+    .sidebar-section { padding: 17px 13px; border-bottom: 1px solid var(--cp-border); }
+    .section-label { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 5px 11px; color: #9ba6b6; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .product-choice { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 65px; margin: 0 0 7px; padding: 10px 11px; color: #cbd3df; text-align: left; background: #282d36; border: 1px solid transparent; border-radius: 7px; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+    .product-choice:last-child { margin-bottom: 0; }
+    .product-choice:hover { background: #2d3440; }
+    .product-choice[aria-pressed="true"] { color: #fff; background: linear-gradient(90deg, rgba(237,52,72,.15), rgba(237,52,72,.045)); border-color: rgba(237,52,72,.46); box-shadow: inset 3px 0 0 var(--cp-red); }
+    .product-icon { display: grid; place-items: center; width: 35px; height: 35px; flex: 0 0 auto; color: #ff8c95; background: rgba(237,52,72,.11); border-radius: 6px; }
+    .product-icon svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .product-choice[data-product="severe"] .product-icon { color: #ff8c95; background: rgba(237,52,72,.12); }
+    .product-copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .product-copy strong { font-size: 12px; font-weight: 800; }
+    .product-copy span { color: #94a1b2; font-size: 10px; line-height: 1.35; }
+    .product-choice .choice-chevron { margin-left: auto; color: #657386; font-size: 17px; }
+    .period-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .period-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 66px; padding: 11px 12px; color: #aeb9c9; background: #292e37; border: 1px solid rgba(255,255,255,.07); border-radius: 7px; cursor: pointer; text-align: left; }
+    .period-choice strong { color: inherit; font-family: Manrope, sans-serif; font-size: 17px; line-height: 1; }
+    .period-choice span { font-size: 10px; }
+    .period-choice[aria-pressed="true"] { color: #fff; background: rgba(237,52,72,.13); border-color: rgba(237,52,72,.48); }
+    .period-choice[aria-pressed="true"] strong { color: #ff7a87; }
+    .severity-legend { display: grid; gap: 9px; }
+    .legend-row { display: flex; align-items: center; gap: 9px; color: #c1cad6; font-size: 11px; }
+    .legend-swatch { width: 25px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+    .swatch-storm { background: #9af5a0; }
+    .swatch-one { background: #f5f523; }
+    .swatch-two { background: #ffa13b; }
+    .swatch-three { background: #ff4b51; }
+    .swatch-four { background: #d91d95; }
+
+    .map-panel { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 520px; overflow: hidden; background: #161a20; }
+    .map-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 49px; padding: 9px 17px; background: #1e222a; border-bottom: 1px solid var(--cp-border); }
+    .map-title-wrap { min-width: 0; }
+    .map-kicker { display: flex; align-items: center; gap: 7px; color: #8e9caf; font-size: 9px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    .map-kicker .tiny-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cp-red); }
+    .map-panel-title { margin: 4px 0 0; overflow: hidden; color: #f2f5fa; font-family: Manrope, sans-serif; font-size: 13px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .map-head-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+    .map-action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 31px; padding: 7px 10px; color: #cbd4e0; background: #292e37; border: 1px solid rgba(255,255,255,.08); border-radius: 5px; font-size: 10px; font-weight: 750; text-decoration: none; cursor: pointer; }
+    .map-action:hover { color: #fff; background: #343b47; }
+    .map-action svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .map-stage { position: relative; display: flex; flex: 1; align-items: center; justify-content: center; min-height: 0; padding: clamp(8px, 1.4vw, 18px); overflow: auto; background-color: #191d24; background-image: radial-gradient(rgba(255,255,255,.035) .7px, transparent .7px); background-size: 13px 13px; }
+    .map-canvas { position: relative; display: grid; place-items: center; width: 100%; height: 100%; min-height: 460px; overflow: hidden; background: #f5f7f9; border: 1px solid rgba(255,255,255,.14); border-radius: 2px; box-shadow: 0 14px 40px rgba(0,0,0,.23); }
+    .map-image { display: block; width: 100%; height: 100%; min-height: 460px; object-fit: contain; object-position: center; background: #f5f7f9; }
+    .map-image[hidden], .state-retry[hidden], .state-official[hidden] { display: none !important; }
+    .map-state { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 30px; color: #475467; background: #f5f7f9; text-align: center; }
+    .map-state[hidden] { display: none; }
+    .map-state-content { max-width: 390px; }
+    .map-state-symbol { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 13px; color: #52708e; background: #e7edf3; border-radius: 12px; }
+    .map-state-symbol svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+    .map-state h2 { margin: 0 0 8px; color: #273346; font: 800 16px Manrope, sans-serif; }
+    .map-state p { margin: 0 0 14px; font-size: 12px; line-height: 1.65; }
+    .state-retry, .state-official { display: inline-flex; align-items: center; justify-content: center; padding: 9px 13px; color: #fff; background: #273e5a; border: 0; border-radius: 5px; font-size: 11px; font-weight: 800; cursor: pointer; text-decoration: none; }
+    .state-official { margin-left: 6px; border: 1px solid #4b5668; background: transparent; }
+    .mobile-sidebar-toggle { display: none; }
+
+    @media (min-width: 1500px) {
+      .forecast-toolbar { grid-template-columns: 320px minmax(300px, 1fr); }
+      .forecast-layout { grid-template-columns: 320px minmax(0, 1fr); }
+      .map-stage { padding: 20px; }
+    }
+    @media (max-width: 980px) {
+      .cptec-page .header-inner { gap: 16px; }
+      .cptec-page .brand-logo { width: 128px; }
+      .cptec-page .header-nav { gap: 15px; }
+      .cptec-page .header-nav a { font-size: 11px; }
+      .forecast-toolbar { grid-template-columns: 235px minmax(180px, 1fr); }
+      .forecast-layout { grid-template-columns: 235px minmax(0, 1fr); }
+      .sidebar-heading { padding-inline: 14px; }
+      .sidebar-section { padding-inline: 10px; }
+      .product-choice { gap: 8px; padding-inline: 8px; }
+    }
+    @media (max-width: 720px) {
+      .cptec-page .container-sideral { width: calc(100% - 28px); }
+      .cptec-page .site-header .header-inner { min-height: 67px; }
+      .cptec-page .brand-logo { width: 120px; max-height: 43px; }
+      .cptec-page .root-mark { width: 31px; height: 21px; }
+      .cptec-page .header-nav { display: none; }
+      .cptec-page .header-actions { margin-left: auto; gap: 8px; }
+      .cptec-page .language { display: none; }
+      .cptec-page .header-actions > .btn-sideral { min-height: 35px; padding: 7px 9px; font-size: 10px; }
+      .cptec-page .header-actions > .btn-sideral svg { width: 17px; height: 17px; }
+      .cptec-page .mobile-menu-button { display: inline-grid; place-items: center; width: 36px; height: 36px; color: #edf3fb; background: transparent; border: 1px solid rgba(255,255,255,.18); border-radius: 6px; }
+      .cptec-page .mobile-nav:not([hidden]) { display: flex; flex-direction: column; gap: 0; padding: 6px 18px 14px; border-top: 1px solid rgba(255,255,255,.07); }
+      .cptec-page .mobile-nav a { padding: 10px 0; }
+      .cptec-app { height: calc(100vh - 67px); min-height: 600px; }
+      .forecast-toolbar { min-height: 45px; grid-template-columns: auto minmax(90px, 1fr); }
+      .toolbar-cluster { gap: 4px; padding: 5px 6px; }
+      .toolbar-button { width: 30px; height: 30px; }
+      .toolbar-cluster .hide-mobile { display: none; }
+      .timeline-cluster { gap: 7px; }
+      .timeline-label { display: none; }
+      .timeline-current { min-width: 37px; font-size: 10px; }
+      .forecast-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(500px, 1fr); }
+      .forecast-sidebar { display: none; border-right: 0; border-bottom: 1px solid var(--cp-border); }
+      .forecast-sidebar.is-open { display: flex; }
+      .sidebar-heading { padding: 13px 15px; }
+      .sidebar-heading p { max-width: none; }
+      .sidebar-section { padding: 12px; }
+      .product-choice { min-height: 57px; }
+      .severity-legend { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .map-panel { min-height: 0; }
+      .map-panel-head { min-height: 45px; padding: 7px 9px; }
+      .map-kicker { font-size: 8px; }
+      .map-panel-title { font-size: 11px; }
+      .map-action { min-height: 29px; padding: 6px 8px; font-size: 9px; }
+      .map-action .action-label { display: none; }
+      .map-stage { min-height: 0; padding: 6px; overflow: auto; align-items: flex-start; }
+      .map-canvas { height: auto; min-height: min(470px, calc(100vw * .9)); }
+      .map-image { height: auto; min-height: 0; max-height: 74vh; }
+      .map-state { position: absolute; }
+    }
+    @media (max-width: 430px) {
+      .cptec-page .brand-logo { width: 103px; }
+      .cptec-page .root-mark { display: none; }
+      .cptec-page .header-actions > .btn-sideral { font-size: 0; gap: 0; width: 37px; padding: 0; }
+      .cptec-page .header-actions > .btn-sideral svg { width: 19px; height: 19px; }
+      .forecast-toolbar { grid-template-columns: auto minmax(72px, 1fr); }
+      .toolbar-button { width: 27px; }
+      .toolbar-cluster { padding-inline: 4px; }
+      .map-panel-head { gap: 6px; }
+      .map-head-actions { gap: 4px; }
+      .map-action { width: 29px; padding: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+    .forecast-layout.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+    .forecast-layout.sidebar-collapsed .forecast-sidebar { display: none; }
+    .forecast-toolbar { grid-template-columns: 300px minmax(260px, 1fr); }
+    .timeline-cluster { flex: 1; min-width: 0; }
+    .timeline-current { min-width: 90px; }
+    .astorp-counter { color: #9ca9ba; font-size: 10px; font-weight: 800; white-space: nowrap; }
+    .map-panel-title { font-size: 13px; }
+    .map-canvas { background: #fff; }
+    .map-image { background: #fff; }
+    .product-choice { min-height: 58px; }
+    .product-choice .product-copy strong { font-size: 12px; }
+    .sidebar-heading h1 { font-size: 16px; }
+    .sidebar-heading .sidebar-subtitle { margin-top: 5px; color: #a8b4c4; font-size: 11px; }
+    .map-state-symbol { color: #b82b3e; background: rgba(237,52,72,.10); }
+    .state-retry { background: #df3045; }
+    .state-retry:hover { background: #be2437; }
+    .state-official:hover { border-color: #df3045; background: rgba(223,48,69,.12); }
+    @media (max-width: 980px) {
+      .forecast-toolbar { grid-template-columns: 235px minmax(180px, 1fr); }
+      .timeline-current { min-width: 68px; }
+    }
+    @media (max-width: 720px) {
+      .forecast-toolbar { grid-template-columns: auto minmax(90px, 1fr); }
+      .timeline-current { min-width: 56px; }
+      .astorp-counter { display: none; }
+      .forecast-layout.sidebar-collapsed { grid-template-columns: minmax(0, 1fr); }
+      .forecast-layout.sidebar-collapsed .forecast-sidebar { display: none; }
+    }
+
+
+    .forecast-toolbar.astorp-toolbar { grid-template-columns: 300px minmax(220px, 1fr) auto; }
+    .toolbar-left { gap: 7px; }
+    .speed-range { width: 70px; max-width: 20%; min-width: 35px; accent-color: var(--cp-red); cursor: pointer; }
+    .toolbar-actions { justify-content: flex-end; gap: 5px; }
+    .toolbar-actions .toolbar-button { border-color: rgba(255,255,255,.10); }
+    .export-menu-wrap { position: relative; display: inline-flex; align-items: center; }
+    .export-menu { position: absolute; z-index: 50; top: calc(100% + 8px); right: 0; width: 176px; padding: 6px; background: #252a33; border: 1px solid rgba(255,255,255,.13); border-radius: 8px; box-shadow: 0 12px 32px rgba(0,0,0,.4); }
+    .export-menu[hidden], .export-status[hidden] { display: none !important; }
+    .export-menu-heading { padding: 7px 9px 8px; color: #9ba8b9; font-size: 9px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    .export-menu-option { display: block; width: 100%; padding: 9px; color: #e6ebf3; background: transparent; border: 0; border-radius: 5px; text-align: left; font: inherit; font-size: 11px; cursor: pointer; }
+    .export-menu-option:hover, .export-menu-option:focus-visible { color: #fff; background: rgba(237,52,72,.18); outline: none; }
+    .export-menu-option:disabled { opacity: .45; cursor: wait; }
+    .export-status { position: absolute; z-index: 30; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 12px; max-width: min(460px, calc(100% - 28px)); padding: 10px 12px; color: #f5f7fb; background: rgba(28,32,40,.96); border: 1px solid rgba(255,255,255,.13); border-left: 3px solid var(--cp-red); border-radius: 7px; box-shadow: 0 8px 24px rgba(0,0,0,.28); font-size: 11px; line-height: 1.5; }
+    .export-status button { flex: 0 0 auto; padding: 5px 8px; color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.17); border-radius: 4px; font-size: 10px; cursor: pointer; }
+    .export-status button:hover { background: rgba(237,52,72,.2); border-color: rgba(237,52,72,.45); }
+    .product-choice { min-height: 45px; margin-bottom: 3px; }
+    .product-copy { gap: 0; }
+    .map-panel { min-height: 0; }
+    .map-stage { flex: 1; min-height: 0; padding: 0; background: #161a20; }
+    .map-canvas { min-height: 0; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+    .map-image { min-height: 0; }
+    @media (max-width: 980px) {
+      .forecast-toolbar.astorp-toolbar { grid-template-columns: 235px minmax(160px, 1fr) auto; }
+      .speed-range { width: 50px; }
+    }
+    @media (max-width: 720px) {
+      .forecast-toolbar.astorp-toolbar { grid-template-columns: auto minmax(72px, 1fr) auto; }
+      .toolbar-left { gap: 3px; }
+      .toolbar-actions { gap: 2px; padding-inline: 3px; }
+      .toolbar-actions .toolbar-button { width: 27px; }
+      .speed-range { display: none; }
+      .astorp-counter { display: none; }
+      .timeline-cluster { gap: 2px; }
+      .timeline-current { min-width: 43px; font-size: 10px; }
+    }
+    @media (max-width: 430px) {
+      .forecast-toolbar.astorp-toolbar { grid-template-columns: auto minmax(66px, 1fr) auto; }
+      .toolbar-left .toolbar-button { width: 26px; }
+      .timeline-cluster .toolbar-button { width: 23px; }
+      .timeline-current { min-width: 36px; }
+    }
+
+  </style>
+<link rel="stylesheet" href="css/site-header.css">
+</head>
+<body class="cptec-page">
+  <div class="site-shell" id="inicio">
+    <header class="site-header"><div class="container-sideral header-inner"><div class="brand-lockup"><a class="brand" href="index.html" aria-label="Sideral Meteorologia"><img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213"></a><svg class="root-mark" viewBox="0 0 40 26" width="40" height="26" role="img" aria-label="Sideral V3"><path class="root-sign" d="M1 15 H5.5 L8.5 23.5 L15 2"></path><path class="root-bar" d="M14.2 2 H31.5"></path><text class="root-value" x="23" y="21.5">3</text></svg></div><nav class="header-nav" aria-label="Navegação principal"><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav><div class="header-actions"><button class="mobile-menu-button" id="mobileMenuButton" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button></div></div><nav class="mobile-nav" id="mobile-nav" hidden><a href="index.html#ferramentas">Ferramentas</a><a href="index.html#modelos">Modelos</a><a href="index.html#skew-t">Skew-T</a><a href="index.html#sobre">Sobre a Sideral</a></nav></header>
+    <main class="cptec-app" id="previsoes">
+      <div class="forecast-toolbar astorp-toolbar" role="toolbar" aria-label="Controles da previsão">
+        <div class="toolbar-cluster toolbar-left">
+          <button class="toolbar-button" id="fullscreenMap" aria-label="Mapa em tela cheia" title="Mapa em tela cheia">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"></path></svg>
+          </button>
+          <button class="toolbar-button" id="toggleSidebar" aria-label="Mostrar ou ocultar parâmetros" aria-pressed="false" title="Mostrar ou ocultar parâmetros">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"></rect><path d="M9 4v16"></path></svg>
+          </button>
+          <button class="toolbar-button" id="playPeriod" aria-label="Reproduzir sequência de previsão" title="Reproduzir sequência" aria-pressed="false">
+            <svg id="playGlyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z" fill="currentColor" stroke="none"></path></svg>
+          </button>
+          <input class="speed-range" id="playSpeed" type="range" min="1" max="10" step="1" value="5" aria-label="Velocidade da animação" title="Velocidade da animação">
+        </div>
+        <div class="toolbar-cluster timeline-cluster">
+          <button class="toolbar-button" id="previousPeriod" aria-label="Passo anterior" title="Passo anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5 8 12l10 7z" fill="currentColor" stroke="none"></path><path d="M5 5v14"></path></svg>
+          </button>
+          <button class="toolbar-button hide-mobile" id="backThree" aria-label="Voltar três horas" title="Voltar três horas">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-9 7 9 7M21 5l-9 7 9 7" fill="none"></path></svg>
+          </button>
+          <input class="timeline-range" id="periodRange" type="range" min="0" max="79" step="1" value="0" aria-label="Horário da previsão">
+          <span class="timeline-current" id="periodReadout">F000</span>
+          <button class="toolbar-button hide-mobile" id="forwardThree" aria-label="Avançar três horas" title="Avançar três horas">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 9 7-9 7M3 5l9 7-9 7" fill="none"></path></svg>
+          </button>
+          <button class="toolbar-button" id="nextPeriod" aria-label="Próximo passo" title="Próximo passo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 5 10 7-10 7z" fill="currentColor" stroke="none"></path><path d="M19 5v14"></path></svg>
+          </button>
+        </div>
+        <div class="toolbar-cluster toolbar-actions">
+          <button class="toolbar-button" id="openImage" type="button" title="Abrir imagem original" aria-label="Abrir imagem original">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"></path><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"></path></svg>
+          </button>
+          <button class="toolbar-button" id="downloadMap" type="button" title="Baixar imagem atual" aria-label="Baixar imagem atual">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"></path><path d="M5 19h14"></path></svg>
+          </button>
+          <div class="export-menu-wrap">
+            <button class="toolbar-button" id="exportMenuToggle" type="button" title="Exportar animação" aria-label="Exportar animação" aria-expanded="false" aria-controls="exportMenu">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"></path></svg>
+            </button>
+            <div class="export-menu" id="exportMenu" role="menu" hidden>
+              <div class="export-menu-heading">Exportar sequência</div>
+              <button class="export-menu-option" type="button" role="menuitem" data-export="gif" data-speed="slow">GIF · Lento</button>
+              <button class="export-menu-option" type="button" role="menuitem" data-export="gif" data-speed="fast">GIF · Rápido</button>
+              <button class="export-menu-option" type="button" role="menuitem" data-export="video" data-speed="slow">MP4 · Lento</button>
+              <button class="export-menu-option" type="button" role="menuitem" data-export="video" data-speed="fast">MP4 · Rápido</button>
+            </div>
+          </div>
+          <span class="astorp-counter" id="stepCounter">1/80</span>
+        </div>
+      </div>
+
+      <div class="forecast-layout" id="forecastLayout">
+        <aside class="forecast-sidebar" id="forecastSidebar" aria-label="Parâmetros da previsão">
+          <div class="sidebar-heading">
+            <span class="eyebrow">Parâmetros</span>
+            <h1>Previsão Probabilística (ASTORP)</h1>
+            <p class="sidebar-subtitle" id="selectedProductSubtitle">SPC Levels</p>
+          </div>
+          <section class="sidebar-section" id="produtos">
+            <h2 class="section-label">Produtos <span>03</span></h2>
+            <button class="product-choice" type="button" data-product="spc" aria-pressed="true">
+              <span class="product-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17c3-4 5-9 9-9s5 5 9 1"></path><path d="M3 21c3-4 5-9 9-9s5 5 9 1"></path><path d="M4 4h16"></path></svg></span>
+              <span class="product-copy"><strong>SPC Levels</strong></span>
+              <span class="choice-chevron" aria-hidden="true">›</span>
+            </button>
+            <button class="product-choice" type="button" data-product="hazards" aria-pressed="false">
+              <span class="product-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3z"></path><path d="M12 9v5M12 17h.01"></path></svg></span>
+              <span class="product-copy"><strong>SPC Hazards</strong></span>
+              <span class="choice-chevron" aria-hidden="true">›</span>
+            </button>
+            <button class="product-choice" type="button" data-product="estofex" aria-pressed="false">
+              <span class="product-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"></path><path d="m6 16 4-6 3 3 5-8"></path></svg></span>
+              <span class="product-copy"><strong>ESTOFEX Levels</strong></span>
+              <span class="choice-chevron" aria-hidden="true">›</span>
+            </button>
+          </section>
+        </aside>
+
+        <section class="map-panel" id="mapa" aria-label="Mapa ASTORP para a América do Sul">
+          <div class="map-stage" id="mapStage">
+            <div class="map-canvas" id="mapCanvas">
+              <img class="map-image" id="forecastImage" alt="Mapa de previsão convectiva ASTORP para a América do Sul" decoding="async" fetchpriority="high" referrerpolicy="strict-origin-when-cross-origin">
+              <div class="map-state" id="mapState" role="status" aria-live="polite" hidden>
+                <div class="map-state-content">
+                  <span class="map-state-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"></path><circle cx="12" cy="12" r="8"></circle></svg></span>
+                  <h2 id="stateTitle"></h2>
+                  <p id="stateMessage"></p>
+                  <button class="state-retry" id="retryMap" type="button" hidden>Tentar novamente</button>
+                  <a class="state-official" id="openOfficialProduct" href="https://rawinsonde.com/ASTORP_SAM/Results/SPC_hour_F000.jpg" target="_blank" rel="noopener noreferrer" hidden>Abrir imagem original ↗</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="export-status" id="exportStatus" role="status" aria-live="polite" hidden>
+            <span id="exportStatusText">Preparando exportação…</span>
+            <button id="cancelExport" type="button">Cancelar</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+      const RESULTS = 'https://rawinsonde.com/ASTORP_SAM/Results/';
+      const TOTAL_STEPS = 80;
+      const STEP_HOURS = 3;
+      const products = {
+        spc: {
+          title: 'SPC Levels',
+          prefix: 'SPC_hour_',
+          sourcePage: 'index.html',
+          alt: 'Mapa ASTORP SPC Levels de previsão convectiva para a América do Sul'
+        },
+        hazards: {
+          title: 'SPC Hazards',
+          prefix: 'SPC_hazard_hour_',
+          sourcePage: 'SPC_hazards.html',
+          alt: 'Mapa ASTORP SPC Hazards com riscos de tempestade, granizo, vento e tornado para a América do Sul'
+        },
+        estofex: {
+          title: 'ESTOFEX Levels',
+          prefix: 'ESTOFEX_hour_',
+          sourcePage: 'ESTOFEX.html',
+          alt: 'Mapa ASTORP ESTOFEX Levels de probabilidade de tempestades severas para a América do Sul'
+        }
+      };
+      const image = document.getElementById('forecastImage');
+      const mapState = document.getElementById('mapState');
+      const stateTitle = document.getElementById('stateTitle');
+      const stateMessage = document.getElementById('stateMessage');
+      const retryMap = document.getElementById('retryMap');
+      const openOfficialProduct = document.getElementById('openOfficialProduct');
+      const selectedProductSubtitle = document.getElementById('selectedProductSubtitle');
+      const periodRange = document.getElementById('periodRange');
+      const periodReadout = document.getElementById('periodReadout');
+      const stepCounter = document.getElementById('stepCounter');
+      const openImage = document.getElementById('openImage');
+      const downloadMap = document.getElementById('downloadMap');
+      const exportMenuToggle = document.getElementById('exportMenuToggle');
+      const exportMenu = document.getElementById('exportMenu');
+      const exportStatus = document.getElementById('exportStatus');
+      const exportStatusText = document.getElementById('exportStatusText');
+      const cancelExport = document.getElementById('cancelExport');
+      const exportOptions = Array.from(document.querySelectorAll('[data-export]'));
+      const layout = document.getElementById('forecastLayout');
+      const sidebar = document.getElementById('forecastSidebar');
+      const toggleSidebar = document.getElementById('toggleSidebar');
+      const playPeriod = document.getElementById('playPeriod');
+      const playGlyph = document.getElementById('playGlyph');
+      let selectedProduct = 'spc';
+      let selectedStep = 0;
+      let playTimer = null;
+      let activeImageUrl = '';
+      let requestNumber = 0;
+      let exportJob = null;
+      const playSpeed = document.getElementById('playSpeed');
+      const GIF_SCRIPT_URL = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
+      const GIF_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js';
+      let gifWorkerBlobUrl = '';
+      let mp4Encoder = null;
+      let mp4EncoderLoadPromise = null;
+      let mp4LastLogs = [];
+      const mp4ObjectUrls = [];
+      // Use a build ESM oficial do FFmpeg.wasm. O pacote UMD depende de um
+      // chunk de worker separado (814.ffmpeg.js), que não é o classWorkerURL
+      // esperado pela API atual e causava falha de inicialização em alguns hosts.
+      const FFMPEG_CDN_PAIRS = [
+        {
+          ffmpeg: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm',
+          worker: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/worker.js',
+          core: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm'
+        },
+        {
+          ffmpeg: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm',
+          worker: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/worker.js',
+          core: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm'
+        }
+      ];
+
+      function leadLabel(step) {
+        return 'F' + String(step * STEP_HOURS).padStart(3, '0');
+      }
+      function urlFor(productKey, step) {
+        return RESULTS + products[productKey].prefix + leadLabel(step) + '.jpg';
+      }
+      function currentUrl() {
+        return urlFor(selectedProduct, selectedStep);
+      }
+      function imageProxyUrl(url) {
+        // Alternativa para redes/navegadores que não consigam exibir a imagem diretamente.
+        // Não acrescentamos parâmetros aleatórios: isso prejudicava o cache do retransmissor.
+        const proxy = new URL('https://wsrv.nl/');
+        proxy.searchParams.set('url', url);
+        proxy.searchParams.set('output', 'jpg');
+        proxy.searchParams.set('maxage', '1d');
+        return proxy.toString();
+      }
+      function updateControls() {
+        document.querySelectorAll('[data-product]').forEach(button => {
+          button.setAttribute('aria-pressed', String(button.dataset.product === selectedProduct));
+        });
+        periodRange.value = String(selectedStep);
+        periodReadout.textContent = leadLabel(selectedStep);
+        stepCounter.textContent = (selectedStep + 1) + '/' + TOTAL_STEPS;
+        selectedProductSubtitle.textContent = products[selectedProduct].title;
+        image.alt = products[selectedProduct].alt + ' (' + leadLabel(selectedStep) + ')';
+        // O link alternativo utiliza o mesmo endereço canônico publicado pelo ASTORP.
+        openOfficialProduct.href = currentUrl();
+      }
+      function showLoading() {
+        // Enquanto a nova imagem é consultada, não exibe mensagem de carregamento.
+        // O painel fica limpo até o mapa responder ou o estado de erro ser mostrado.
+        image.hidden = true;
+        image.removeAttribute('src');
+        mapState.hidden = true;
+        stateTitle.textContent = '';
+        stateMessage.textContent = '';
+        retryMap.hidden = true;
+        openOfficialProduct.hidden = true;
+        openImage.setAttribute('aria-disabled', 'true');
+        downloadMap.setAttribute('aria-disabled', 'true');
+        openImage.style.opacity = '.55';
+        downloadMap.style.opacity = '.55';
+      }
+      function loadCurrentProduct() {
+        updateControls();
+        activeImageUrl = '';
+        const thisRequest = ++requestNumber;
+        showLoading();
+
+        const directUrl = currentUrl();
+        // Testa a fonte oficial e um fallback em paralelo. Antes, vários endereços
+        // eram tentados um após o outro, esperando o timeout do navegador a cada falha.
+        const candidates = [
+          { url: directUrl, referrerPolicy: 'strict-origin-when-cross-origin', label: 'direct' },
+          { url: imageProxyUrl(directUrl), referrerPolicy: 'no-referrer', label: 'proxy' }
+        ];
+        let finished = false;
+        let failures = 0;
+        const probes = [];
+        const timeoutId = window.setTimeout(() => finishFailure(), 9000);
+
+        function cleanup() {
+          window.clearTimeout(timeoutId);
+          probes.forEach(probe => {
+            probe.onload = null;
+            probe.onerror = null;
+          });
+        }
+        function renderFailure() {
+          if (thisRequest !== requestNumber) return;
+          finished = true;
+          cleanup();
+          image.onload = null;
+          image.onerror = null;
+          image.removeAttribute('src');
+          image.hidden = true;
+          mapState.hidden = false;
+          stateTitle.textContent = 'Mapa indisponível no momento';
+          stateMessage.textContent = 'O servidor ASTORP não disponibilizou esta imagem neste momento. Tente novamente.';
+          retryMap.hidden = false;
+          openOfficialProduct.hidden = false;
+          openOfficialProduct.href = directUrl;
+          openImage.setAttribute('aria-disabled', 'true');
+          downloadMap.setAttribute('aria-disabled', 'true');
+          openImage.style.opacity = '.55';
+          downloadMap.style.opacity = '.55';
+        }
+        function finishFailure() {
+          if (finished || thisRequest !== requestNumber) return;
+          renderFailure();
+        }
+        function win(candidate) {
+          if (finished || thisRequest !== requestNumber) return;
+          finished = true;
+          cleanup();
+          activeImageUrl = directUrl;
+          openOfficialProduct.href = directUrl;
+          image.alt = products[selectedProduct].alt + ' (' + leadLabel(selectedStep) + ')';
+          image.referrerPolicy = candidate.referrerPolicy;
+          image.onload = () => {
+            if (thisRequest !== requestNumber) return;
+            image.hidden = false;
+            mapState.hidden = true;
+            retryMap.hidden = true;
+            openOfficialProduct.hidden = true;
+            openImage.removeAttribute('aria-disabled');
+            downloadMap.removeAttribute('aria-disabled');
+            openImage.style.opacity = '1';
+            downloadMap.style.opacity = '1';
+          };
+          image.onerror = () => {
+            // Fallback: o probe carregou, mas o elemento visual não conseguiu reutilizar
+            // a resposta do cache. Mostra o estado de erro imediatamente em vez de travar.
+            renderFailure();
+          };
+          image.src = candidate.url;
+        }
+
+        candidates.forEach(candidate => {
+          const probe = new Image();
+          probes.push(probe);
+          probe.referrerPolicy = candidate.referrerPolicy;
+          probe.decoding = 'async';
+          probe.onload = () => {
+            if (probe.naturalWidth > 0 && probe.naturalHeight > 0) win(candidate);
+            else {
+              failures += 1;
+              if (failures === candidates.length) finishFailure();
+            }
+          };
+          probe.onerror = () => {
+            failures += 1;
+            if (failures === candidates.length) finishFailure();
+          };
+          probe.src = candidate.url;
+        });
+      }
+      function setStep(step) {
+        const next = Math.max(0, Math.min(TOTAL_STEPS - 1, Number(step) || 0));
+        if (next === selectedStep && activeImageUrl) return;
+        selectedStep = next;
+        loadCurrentProduct();
+      }
+      function stopPlay() {
+        if (playTimer) window.clearInterval(playTimer);
+        playTimer = null;
+        playPeriod.setAttribute('aria-pressed', 'false');
+        playPeriod.setAttribute('aria-label', 'Reproduzir sequência de previsão');
+        playGlyph.innerHTML = '<path d="m8 5 11 7-11 7z" fill="currentColor" stroke="none"></path>';
+      }
+      document.querySelectorAll('[data-product]').forEach(button => {
+        button.addEventListener('click', () => {
+          if (selectedProduct === button.dataset.product) return;
+          selectedProduct = button.dataset.product;
+          loadCurrentProduct();
+        });
+      });
+      periodRange.addEventListener('input', () => setStep(periodRange.value));
+      document.getElementById('previousPeriod').addEventListener('click', () => setStep(selectedStep - 1));
+      document.getElementById('nextPeriod').addEventListener('click', () => setStep(selectedStep + 1));
+      document.getElementById('backThree').addEventListener('click', () => setStep(selectedStep - 1));
+      document.getElementById('forwardThree').addEventListener('click', () => setStep(selectedStep + 1));
+      retryMap.addEventListener('click', loadCurrentProduct);
+      openImage.addEventListener('click', () => {
+        if (!activeImageUrl) return;
+        window.open(activeImageUrl, '_blank', 'noopener,noreferrer');
+      });
+      downloadMap.addEventListener('click', async () => {
+        if (!activeImageUrl) return;
+        try {
+          const response = await fetch(activeImageUrl, { mode: 'cors', cache: 'no-store' });
+          if (!response.ok) throw new Error('Image download failed');
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = 'astorp-' + selectedProduct + '-' + leadLabel(selectedStep) + '.jpg';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        } catch (error) {
+          window.open(activeImageUrl, '_blank', 'noopener,noreferrer');
+        }
+      });
+      function setExportStatus(message, visible = true) {
+        exportStatusText.textContent = message;
+        exportStatus.hidden = !visible;
+      }
+      function closeExportMenu() {
+        exportMenu.hidden = true;
+        exportMenuToggle.setAttribute('aria-expanded', 'false');
+      }
+      exportMenuToggle.addEventListener('click', () => {
+        const willOpen = exportMenu.hidden;
+        exportMenu.hidden = !willOpen;
+        exportMenuToggle.setAttribute('aria-expanded', String(willOpen));
+      });
+      document.addEventListener('click', event => {
+        if (!event.target.closest('.export-menu-wrap')) closeExportMenu();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeExportMenu();
+      });
+
+      function wait(ms) {
+        return new Promise(resolve => window.setTimeout(resolve, ms));
+      }
+      function loadExportImage(productKey, step) {
+        const canonical = urlFor(productKey, step);
+        const candidates = [imageProxyUrl(canonical), canonical];
+        return new Promise((resolve, reject) => {
+          let index = 0;
+          let lastError = null;
+          function tryNext() {
+            if (exportJob && exportJob.cancelled) {
+              reject(new Error('Exportação cancelada.'));
+              return;
+            }
+            if (index >= candidates.length) {
+              reject(lastError || new Error('Não foi possível acessar ' + leadLabel(step) + '.'));
+              return;
+            }
+            const src = candidates[index++];
+            const frame = new Image();
+            frame.crossOrigin = 'anonymous';
+            frame.referrerPolicy = 'no-referrer';
+            frame.decoding = 'async';
+            let loadTimer = window.setTimeout(() => {
+              lastError = new Error('Tempo esgotado ao carregar ' + leadLabel(step));
+              frame.onload = null;
+              frame.onerror = null;
+              tryNext();
+            }, 12000);
+            frame.onload = () => {
+              window.clearTimeout(loadTimer);
+              if (frame.naturalWidth > 0 && frame.naturalHeight > 0) resolve(frame);
+              else { lastError = new Error('Imagem vazia em ' + leadLabel(step)); tryNext(); }
+            };
+            frame.onerror = () => {
+              window.clearTimeout(loadTimer);
+              lastError = new Error('Falha ao carregar ' + leadLabel(step));
+              tryNext();
+            };
+            frame.src = src;
+          }
+          tryNext();
+        });
+      }
+      function fitCanvas(canvas, frame, maxWidth = 960) {
+        const scale = Math.min(1, maxWidth / frame.naturalWidth);
+        canvas.width = Math.max(1, Math.round(frame.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(frame.naturalHeight * scale));
+      }
+      function drawExportFrame(ctx, canvas, frame) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+      }
+      function downloadBlob(blob, filename) {
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      }
+      function loadGifLibrary() {
+        if (window.GIF) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          const existing = document.querySelector('script[data-gif-library]');
+          if (existing) {
+            existing.addEventListener('load', resolve, { once: true });
+            existing.addEventListener('error', () => reject(new Error('Não foi possível carregar o codificador GIF.')), { once: true });
+            if (window.GIF) resolve();
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = GIF_SCRIPT_URL;
+          script.async = true;
+          script.dataset.gifLibrary = 'true';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('O serviço de exportação GIF não respondeu.'));
+          document.head.appendChild(script);
+        });
+      }
+      async function getGifWorkerUrl() {
+        if (gifWorkerBlobUrl) return gifWorkerBlobUrl;
+        const response = await fetch(GIF_WORKER_URL, { mode: 'cors', cache: 'force-cache' });
+        if (!response.ok) throw new Error('Não foi possível carregar o processador de GIF.');
+        const workerSource = await response.text();
+        gifWorkerBlobUrl = URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' }));
+        return gifWorkerBlobUrl;
+      }
+      function makeExportFilename(productKey, speed, extension) {
+        return 'sideral-astorp-' + productKey + '-' + speed + '.' + extension;
+      }
+      async function exportGif(productKey, speed) {
+        await loadGifLibrary();
+        if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+        const workerUrl = await getGifWorkerUrl();
+        if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+        const firstFrame = await loadExportImage(productKey, 0);
+        const canvas = document.createElement('canvas');
+        fitCanvas(canvas, firstFrame);
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const delay = speed === 'slow' ? 800 : 250;
+        const gif = new window.GIF({
+          workers: 2,
+          quality: 10,
+          width: canvas.width,
+          height: canvas.height,
+          workerScript: workerUrl,
+          repeat: 0,
+          background: '#ffffff'
+        });
+        gif.on('progress', progress => {
+          if (exportJob && !exportJob.cancelled) setExportStatus('Codificando GIF · ' + Math.round(progress * 100) + '%');
+        });
+        drawExportFrame(ctx, canvas, firstFrame);
+        gif.addFrame(canvas, { delay, copy: true });
+        for (let step = 1; step < TOTAL_STEPS; step++) {
+          if (exportJob && exportJob.cancelled) {
+            try { gif.abort(); } catch (_) {}
+            throw new Error('Exportação cancelada.');
+          }
+          setExportStatus('Preparando GIF · ' + (step + 1) + '/' + TOTAL_STEPS);
+          const frame = await loadExportImage(productKey, step);
+          drawExportFrame(ctx, canvas, frame);
+          gif.addFrame(canvas, { delay, copy: true });
+        }
+        setExportStatus('Montando GIF…');
+        const blob = await new Promise((resolve, reject) => {
+          gif.on('finished', resolve);
+          if (typeof gif.on === 'function') {
+            try { gif.on('error', reject); } catch (_) {}
+          }
+          gif.render();
+        });
+        if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+        downloadBlob(blob, makeExportFilename(productKey, speed, 'gif'));
+      }
+      function promiseWithTimeout(promise, timeoutMs, message) {
+        let timer = null;
+        const timeout = new Promise((_, reject) => {
+          timer = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+        });
+        return Promise.race([Promise.resolve(promise), timeout]).finally(() => {
+          if (timer !== null) window.clearTimeout(timer);
+        });
+      }
+
+      async function fetchAsBlobURL(url, mimeType, signal, timeoutMs = 18000) {
+        // O sinal do ciclo cancela todos os downloads quando um CDN estoura o prazo.
+        const timeoutController = new AbortController();
+        const abortFromParent = () => timeoutController.abort();
+        if (signal) {
+          if (signal.aborted) timeoutController.abort();
+          else signal.addEventListener('abort', abortFromParent, { once: true });
+        }
+        const timer = window.setTimeout(() => timeoutController.abort(), timeoutMs);
+        try {
+          const response = await fetch(url, {
+            mode: 'cors',
+            cache: 'force-cache',
+            signal: timeoutController.signal
+          });
+          if (!response.ok) throw new Error('O serviço de conversão MP4 respondeu HTTP ' + response.status + '.');
+          const sourceBlob = await response.blob();
+          if (!sourceBlob.size) throw new Error('O servidor enviou um arquivo vazio para o conversor MP4.');
+          const objectUrl = URL.createObjectURL(new Blob([sourceBlob], { type: mimeType }));
+          mp4ObjectUrls.push(objectUrl);
+          return objectUrl;
+        } catch (error) {
+          if (timeoutController.signal.aborted) {
+            throw new Error('Tempo esgotado ao baixar um componente do conversor MP4.');
+          }
+          throw error;
+        } finally {
+          window.clearTimeout(timer);
+          if (signal) signal.removeEventListener('abort', abortFromParent);
+        }
+      }
+
+      async function loadFfmpegModule(cdn, timeoutMs = 12000) {
+        const moduleUrl = cdn.ffmpeg + '/index.js';
+        const module = await promiseWithTimeout(
+          import(moduleUrl),
+          timeoutMs,
+          'Tempo esgotado ao carregar o módulo ESM do FFmpeg.'
+        );
+        if (!module || typeof module.FFmpeg !== 'function') {
+          throw new Error('O módulo ESM carregou, mas não disponibilizou a classe FFmpeg.');
+        }
+        return module.FFmpeg;
+      }
+
+      function createModuleWorkerBridge(workerModuleUrl) {
+        // Workers cross-origin diretos são bloqueados por vários navegadores.
+        // Um worker module blob importa o worker ESM do CDN; os imports relativos
+        // deste worker continuam resolvendo para o diretório original do pacote.
+        const source = 'import ' + JSON.stringify(workerModuleUrl) + ';';
+        const bridgeUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+        mp4ObjectUrls.push(bridgeUrl);
+        return bridgeUrl;
+      }
+
+      async function tryLoadMp4Encoder(cdn) {
+        const controller = new AbortController();
+        const firstNewUrl = mp4ObjectUrls.length;
+        let ffmpeg = null;
+        try {
+          setExportStatus('Carregando motor MP4…');
+          const [FFmpegCtor, coreURL, wasmURL] = await Promise.all([
+            loadFfmpegModule(cdn, 12000),
+            fetchAsBlobURL(cdn.core + '/ffmpeg-core.js', 'text/javascript', controller.signal, 22000),
+            fetchAsBlobURL(cdn.core + '/ffmpeg-core.wasm', 'application/wasm', controller.signal, 30000)
+          ]);
+          if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+          const classWorkerURL = createModuleWorkerBridge(cdn.worker);
+          ffmpeg = new FFmpegCtor();
+          ffmpeg.on('log', ({ message }) => {
+            mp4LastLogs.push(String(message || ''));
+            if (mp4LastLogs.length > 18) mp4LastLogs.shift();
+            if (exportJob && !exportJob.cancelled && /error|failed|unable|not found/i.test(message)) {
+              console.debug('[ASTORP MP4]', message);
+            }
+          });
+          setExportStatus('Iniciando motor MP4…');
+          await promiseWithTimeout(
+            ffmpeg.load({ classWorkerURL, coreURL, wasmURL }),
+            18000,
+            'O motor MP4 não iniciou dentro do tempo limite.'
+          );
+          if (!ffmpeg.loaded) throw new Error('O motor MP4 não confirmou a inicialização.');
+          return ffmpeg;
+        } catch (error) {
+          controller.abort();
+          if (ffmpeg && typeof ffmpeg.terminate === 'function') {
+            try { ffmpeg.terminate(); } catch (_) {}
+          }
+          mp4ObjectUrls.splice(firstNewUrl).forEach(url => {
+            try { URL.revokeObjectURL(url); } catch (_) {}
+          });
+          throw error;
+        }
+      }
+
+      async function loadMp4Encoder() {
+        if (mp4Encoder && mp4Encoder.loaded) return mp4Encoder;
+        if (mp4EncoderLoadPromise) return mp4EncoderLoadPromise;
+
+        mp4EncoderLoadPromise = (async () => {
+          let lastError = null;
+          for (let index = 0; index < FFMPEG_CDN_PAIRS.length; index++) {
+            try {
+              return await tryLoadMp4Encoder(FFMPEG_CDN_PAIRS[index]);
+            } catch (error) {
+              lastError = error;
+              console.warn('[ASTORP MP4] provedor ' + (index + 1) + ' falhou; tentando alternativa.', error);
+            }
+          }
+          const detail = lastError && lastError.message ? ' Motivo: ' + lastError.message : '';
+          throw new Error('Não foi possível iniciar o conversor MP4 após testar os servidores disponíveis. ' +
+            'Verifique a conexão e tente novamente.' + detail);
+        })();
+
+        try {
+          mp4Encoder = await mp4EncoderLoadPromise;
+          return mp4Encoder;
+        } finally {
+          mp4EncoderLoadPromise = null;
+        }
+      }
+
+      async function canvasToJpegBytes(canvas, quality = 0.9) {
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(value => {
+            if (value && value.size) resolve(value);
+            else reject(new Error('Não foi possível preparar um quadro para o MP4. Verifique se a imagem permite exportação.'));
+          }, 'image/jpeg', quality);
+        });
+        return new Uint8Array(await blob.arrayBuffer());
+      }
+
+      const MP4_MUXER_URLS = [
+        'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/+esm',
+        'https://esm.sh/mp4-muxer@5.1.3'
+      ];
+      async function loadMp4Muxer() {
+        let lastError = null;
+        for (const url of MP4_MUXER_URLS) {
+          try {
+            const mod = await promiseWithTimeout(import(url), 15000, 'Tempo esgotado ao carregar o muxer MP4.');
+            if (mod && mod.Muxer && mod.ArrayBufferTarget) return mod;
+          } catch (error) { lastError = error; }
+        }
+        throw lastError || new Error('Não foi possível carregar o muxer MP4.');
+      }
+      async function pickH264Config(width, height, fps) {
+        const codecs = ['avc1.640028', 'avc1.4d0028', 'avc1.42001f', 'avc1.42E01E'];
+        for (const codec of codecs) {
+          const config = { codec, width, height, bitrate: 3000000, framerate: fps, avc: { format: 'avc' } };
+          try {
+            const support = await VideoEncoder.isConfigSupported(config);
+            if (support && support.supported) return config;
+          } catch (_) {}
+        }
+        return null;
+      }
+      // MP4 nativo: WebCodecs (H.264) + mp4-muxer. Rápido e sem baixar WASM.
+      // Retorna false se o navegador não suportar, para usar o FFmpeg como reserva.
+      async function exportVideoNative(productKey, speed) {
+        if (!('VideoEncoder' in window) || !('VideoFrame' in window)) return false;
+        const fps = speed === 'slow' ? 1.25 : 4;
+        setExportStatus('Preparando exportação MP4…');
+        const first = await loadExportImage(productKey, 0);
+        const canvas = document.createElement('canvas');
+        fitCanvas(canvas, first, 960);
+        canvas.width = canvas.width - (canvas.width % 2);
+        canvas.height = canvas.height - (canvas.height % 2);
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const config = await pickH264Config(canvas.width, canvas.height, fps);
+        if (!config) return false;
+        let mod;
+        try { mod = await loadMp4Muxer(); } catch (_) { return false; }
+        const muxer = new mod.Muxer({
+          target: new mod.ArrayBufferTarget(),
+          video: { codec: 'avc', width: canvas.width, height: canvas.height },
+          fastStart: 'in-memory'
+        });
+        let encoderError = null;
+        const encoder = new VideoEncoder({
+          output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+          error: e => { encoderError = e; }
+        });
+        encoder.configure(config);
+        const frameDuration = 1e6 / fps;
+        try {
+          for (let step = 0; step < TOTAL_STEPS; step++) {
+            if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+            if (encoderError) throw encoderError;
+            setExportStatus('Gerando MP4 · ' + (step + 1) + '/' + TOTAL_STEPS);
+            const img = step === 0 ? first : await loadExportImage(productKey, step);
+            drawExportFrame(ctx, canvas, img);
+            const vf = new VideoFrame(canvas, { timestamp: Math.round(step * frameDuration), duration: Math.round(frameDuration) });
+            encoder.encode(vf, { keyFrame: step % 20 === 0 });
+            vf.close();
+            if (encoder.encodeQueueSize > 8) await wait(30);
+          }
+          setExportStatus('Finalizando MP4…');
+          await encoder.flush();
+          if (encoderError) throw encoderError;
+          muxer.finalize();
+          const buffer = muxer.target.buffer;
+          if (!buffer || !buffer.byteLength) throw new Error('O MP4 gerado está vazio.');
+          downloadBlob(new Blob([buffer], { type: 'video/mp4' }), makeExportFilename(productKey, speed, 'mp4'));
+          return true;
+        } finally {
+          try { encoder.close(); } catch (_) {}
+        }
+      }
+      async function exportVideo(productKey, speed) {
+        try {
+          if (await exportVideoNative(productKey, speed)) return;
+        } catch (error) {
+          if (error && /cancelad/i.test(error.message || '')) throw error;
+          console.warn('[ASTORP MP4] codificador nativo falhou; usando FFmpeg.', error);
+        }
+        return exportVideoFfmpeg(productKey, speed);
+      }
+      async function exportVideoFfmpeg(productKey, speed) {
+        // Gera MP4 diretamente de uma sequência de JPEGs no FFmpeg.wasm.
+        // Isso remove a etapa intermediária MediaRecorder/WebM, que variava
+        // conforme o navegador e era uma fonte de falhas na exportação.
+        setExportStatus('Iniciando motor MP4…');
+        const ffmpeg = await loadMp4Encoder();
+        if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+
+        const outputName = 'astorp-output.mp4';
+        const frameNames = [];
+        let encoderTerminated = false;
+        let canvas = null;
+        let ctx = null;
+        try {
+          try { await ffmpeg.deleteFile(outputName); } catch (_) {}
+          for (let step = 0; step < TOTAL_STEPS; step++) {
+            if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+            setExportStatus('Preparando quadros MP4 · ' + (step + 1) + '/' + TOTAL_STEPS);
+            const frame = await loadExportImage(productKey, step);
+            if (!canvas) {
+              canvas = document.createElement('canvas');
+              fitCanvas(canvas, frame, 960);
+              ctx = canvas.getContext('2d', { alpha: false });
+              if (!ctx) throw new Error('Não foi possível preparar a imagem para o MP4.');
+            }
+            drawExportFrame(ctx, canvas, frame);
+            const name = 'astorp-frame-' + String(step).padStart(3, '0') + '.jpg';
+            frameNames.push(name);
+            await ffmpeg.writeFile(name, await canvasToJpegBytes(canvas));
+          }
+
+          if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+          setExportStatus('Codificando MP4 · ' + (speed === 'slow' ? 'lento' : 'rápido') + '…');
+          const fps = speed === 'slow' ? '1.25' : '4';
+          const exitCode = await promiseWithTimeout(ffmpeg.exec([
+            '-framerate', fps,
+            '-start_number', '0',
+            '-i', 'astorp-frame-%03d.jpg',
+            '-frames:v', String(TOTAL_STEPS),
+            '-an',
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '25',
+            '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            outputName
+          ], 120000), 130000,
+          'A codificação MP4 passou de 2 minutos. Tente MP4 rápido ou exporte como GIF.');
+          if (exitCode !== 0) {
+            const detail = mp4LastLogs.slice(-5).join(' | ');
+            throw new Error('O FFmpeg não conseguiu codificar o MP4 (código ' + exitCode + ').' + (detail ? ' Detalhes: ' + detail : ''));
+          }
+          if (exportJob && exportJob.cancelled) throw new Error('Exportação cancelada.');
+          const data = await ffmpeg.readFile(outputName);
+          if (!data || !data.length) throw new Error('O FFmpeg terminou sem gerar um arquivo MP4 válido.');
+          downloadBlob(new Blob([data], { type: 'video/mp4' }), makeExportFilename(productKey, speed, 'mp4'));
+        } catch (error) {
+          // Um timeout durante exec pode deixar a instância ocupada; descartá-la
+          // evita que uma próxima tentativa reutilize um worker travado.
+          if (error && /passou de 2 minutos|tempo limite/i.test(error.message || '')) {
+            try { ffmpeg.terminate(); } catch (_) {}
+            encoderTerminated = true;
+            if (mp4Encoder === ffmpeg) mp4Encoder = null;
+          }
+          throw error;
+        } finally {
+          if (!encoderTerminated) {
+            for (const name of frameNames) {
+              try { await ffmpeg.deleteFile(name); } catch (_) {}
+            }
+            try { await ffmpeg.deleteFile(outputName); } catch (_) {}
+          }
+        }
+      }
+      function setExportBusy(busy) {
+        exportOptions.forEach(button => { button.disabled = busy; });
+        exportMenuToggle.disabled = busy;
+        cancelExport.hidden = !busy;
+        if (!busy) closeExportMenu();
+      }
+      cancelExport.addEventListener('click', () => {
+        if (exportJob) exportJob.cancelled = true;
+        setExportStatus('Cancelando exportação…');
+      });
+      exportOptions.forEach(button => {
+        button.addEventListener('click', async () => {
+          if (exportJob) return;
+          const format = button.dataset.export;
+          const speed = button.dataset.speed;
+          const productKey = selectedProduct;
+          exportJob = { cancelled: false };
+          stopPlay();
+          closeExportMenu();
+          setExportBusy(true);
+          setExportStatus('Preparando exportação ' + (format === 'gif' ? 'GIF' : 'MP4') + ' · ' + (speed === 'slow' ? 'lenta' : 'rápida') + '…');
+          try {
+            if (format === 'gif') await exportGif(productKey, speed);
+            else await exportVideo(productKey, speed);
+            if (exportJob && !exportJob.cancelled) setExportStatus('Exportação concluída. O arquivo foi baixado.');
+          } catch (error) {
+            const message = error && error.message ? error.message : 'Não foi possível concluir a exportação.';
+            setExportStatus(message);
+          } finally {
+            exportJob = null;
+            setExportBusy(false);
+            window.setTimeout(() => { if (!exportJob) exportStatus.hidden = true; }, 7000);
+          }
+        });
+      });
+
+      document.getElementById('fullscreenMap').addEventListener('click', async () => {
+        const target = document.getElementById('mapCanvas');
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (target.requestFullscreen) await target.requestFullscreen();
+        } catch (error) {
+          // O navegador pode não permitir tela cheia neste contexto.
+        }
+      });
+      toggleSidebar.addEventListener('click', () => {
+        if (window.matchMedia('(max-width: 720px)').matches) {
+          const isOpen = sidebar.classList.toggle('is-open');
+          toggleSidebar.setAttribute('aria-pressed', String(isOpen));
+          toggleSidebar.title = isOpen ? 'Ocultar parâmetros' : 'Mostrar parâmetros';
+        } else {
+          const collapsed = layout.classList.toggle('sidebar-collapsed');
+          toggleSidebar.setAttribute('aria-pressed', String(collapsed));
+          toggleSidebar.title = collapsed ? 'Mostrar parâmetros' : 'Ocultar parâmetros';
+        }
+      });
+      playPeriod.addEventListener('click', () => {
+        if (playTimer) { stopPlay(); return; }
+        playPeriod.setAttribute('aria-pressed', 'true');
+        playPeriod.setAttribute('aria-label', 'Parar sequência de previsão');
+        playGlyph.innerHTML = '<path d="M7 5h4v14H7zM14 5h4v14h-4z" fill="currentColor" stroke="none"></path>';
+        const delay = 5500 - (Number(playSpeed.value) - 1) * 500;
+        playTimer = window.setInterval(() => {
+          selectedStep = (selectedStep + 1) % TOTAL_STEPS;
+          loadCurrentProduct();
+        }, delay);
+      });
+      window.addEventListener('pagehide', stopPlay);
+      window.addEventListener('pagehide', () => { if (exportJob) exportJob.cancelled = true; });
+      const mobileMenuButton = document.getElementById('mobileMenuButton');
+      const mobileNav = document.getElementById('mobile-nav');
+      if (mobileMenuButton && mobileNav) {
+        mobileMenuButton.addEventListener('click', () => {
+          const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+          mobileMenuButton.setAttribute('aria-expanded', String(!isExpanded));
+          mobileNav.hidden = isExpanded;
+        });
+        mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+          mobileNav.hidden = true;
+          mobileMenuButton.setAttribute('aria-expanded', 'false');
+        }));
+      }
+      loadCurrentProduct();
+    })();
+  </script>
+</body>
+</html>
