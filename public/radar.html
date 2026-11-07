@@ -3,99 +3,138 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101317">
+  <meta name="theme-color" content="#0a0f15">
   <title>Radar Meteorológico — Sideral</title>
   <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.css">
-  <link rel="stylesheet" href="site-shell.css?v=20260822-sidebar-icons1">
-  <link rel="stylesheet" href="radar/radar.css?v=20260908-tutorial1">
-  <link rel="stylesheet" href="radar/radar-tabs.css?v=20260829-multicappi1">
+  <link rel="stylesheet" href="radar/radar.css?v=20261107-satellite-interface">
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.js"></script>
-  <script src="navigation.js?v=20260902-saticon2" defer></script>
   <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <body class="radar-page">
-  <header><div class="header-container"><button class="menu" id="menu" type="button" aria-label="Abrir menu"><span></span><span></span><span></span></button><div class="links"><a href="dashboard.html">Início</a><a href="previsao.html">Previsão</a><a href="radar.html">Radar</a><a href="sobre.html">Sobre</a></div></div></header>
-  <main id="radarApp" class="radar-app">
-    <div id="radarMap" class="radar-map" aria-label="Mapa meteorológico interativo em 2D e 3D"></div>
-    <button id="panelToggle" class="panel-toggle" type="button" aria-label="Recolher controles" aria-expanded="true"><i class="ph ph-caret-left"></i></button>
+  <main id="radarApp" class="radar-app panel-collapsed">
+    <nav class="rail" aria-label="Radar">
+      <a class="rail-brand" href="dashboard.html" data-tip="Voltar ao site" aria-label="Voltar ao site">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5" fill="none" stroke="#ef2b2d" stroke-width="3.8" stroke-linecap="round"/></svg>
+      </a>
+      <div class="rail-tabs" role="tablist" aria-label="Seções dos controles" aria-orientation="vertical">
+        <button id="radarTabButton" class="rail-tab active" type="button" role="tab" aria-selected="true" aria-controls="radarTab" data-panel-tab="radar" data-title="Radar" data-tip="Radar" aria-label="Radar"><i class="ph ph-radar"></i></button>
+        <button id="layersTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="layersTab" data-panel-tab="layers" data-title="Camadas" data-tip="Camadas" aria-label="Camadas"><i class="ph ph-stack"></i></button>
+        <button id="typeTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="typeTab" data-panel-tab="type" data-title="Produto" data-tip="Produto" aria-label="Produto"><i class="ph ph-sliders-horizontal"></i></button>
+        <button id="visualTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="visualTab" data-panel-tab="visual" data-title="Visual" data-tip="Visual" aria-label="Visual"><i class="ph ph-palette"></i></button>
+        <button id="exportTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="exportTab" data-panel-tab="export" data-title="Exportar" data-tip="Exportar" aria-label="Exportar"><i class="ph ph-download-simple"></i></button>
+      </div>
+      <div class="rail-links">
+        <a href="previsao.html" data-tip="Previsão" aria-label="Previsão"><i class="ph ph-cloud-sun"></i></a>
+        <a href="sobre.html" data-tip="Sobre" aria-label="Sobre"><i class="ph ph-info"></i></a>
+      </div>
+    </nav>
+
+    <div id="radarMap" class="radar-map" aria-label="Mapa meteorológico de radar"></div>
+
+    <aside id="radarStatus" class="radar-status" role="status" aria-live="polite">
+      <span id="providerBadge" class="status-badge loading">Conectando</span>
+      <strong id="statusTitle">Carregando o radar…</strong>
+      <span id="statusDetail">Consultando as imagens mais recentes das redes de radar.</span>
+      <dl><div><dt>Varredura</dt><dd id="scanTime">—</dd></div><div><dt>Origem</dt><dd id="dataOrigin">REDEMET / DECEA</dd></div></dl>
+    </aside>
+
+    <div class="top-right">
+      <div class="clock" aria-label="Horário atual"><strong><span id="clockLocal">--:--:--</span> <small>BR</small></strong><em id="clockUtc">--:-- UTC</em></div>
+      <div class="map-tools" role="toolbar" aria-label="Ferramentas do mapa">
+        <button id="homeButton" type="button" data-tip="Enquadrar radares" aria-label="Enquadrar radares"><i class="ph ph-globe-hemisphere-west"></i></button>
+        <button id="northButton" type="button" data-tip="Norte para cima" aria-label="Norte para cima"><i class="ph ph-compass"></i></button>
+        <button id="fullscreenButton" type="button" data-tip="Tela cheia" aria-label="Tela cheia"><i class="ph ph-corners-out"></i></button>
+      </div>
+    </div>
+
     <section class="radar-panel" aria-label="Controles do radar">
-      <div class="panel-heading"><div><span class="eyebrow">SIDERAL METEOROLOGIA</span><h1>RADAR</h1></div><span id="providerBadge" class="status-badge loading">CARREGANDO</span></div>
-      <div class="panel-tabs" role="tablist" aria-label="Seções dos controles">
-        <button id="radarTabButton" class="active" type="button" role="tab" aria-selected="true" aria-controls="radarTab" data-panel-tab="radar"><i class="ph ph-radar"></i>Radar</button>
-        <button id="typeTabButton" type="button" role="tab" aria-selected="false" aria-controls="typeTab" data-panel-tab="type"><i class="ph ph-sliders-horizontal"></i>Tipo</button>
-        <button id="visualTabButton" type="button" role="tab" aria-selected="false" aria-controls="visualTab" data-panel-tab="visual"><i class="ph ph-squares-four"></i>Visual</button>
+      <div class="drawer-head">
+        <h2 id="drawerTitle">Radar</h2>
+        <button id="panelToggle" class="panel-toggle" type="button" aria-label="Fechar painel" aria-expanded="false"><i class="ph ph-x"></i></button>
       </div>
 
       <div id="radarTab" class="panel-tab-view active" role="tabpanel" aria-labelledby="radarTabButton" data-panel-view="radar">
-        <label>Fonte<select id="sourceSelect"><option value="all_no_rainviewer">Todos os radares — sem RainViewer</option><option value="rainviewer">Precipitação — mosaico (RainViewer)</option><option value="redemet">Radar REDEMET / DECEA</option><option value="cloudultra">CloudUltra Res</option><option value="cemaden">Radares CEMADEN / MCTI</option><option value="regional">Radares regionais</option><option value="inea">Radares INEA / RJ</option><option value="simepar">Radar SIMEPAR / PR</option><option value="ipmet">Radar IPMet / SP</option></select></label>
-        <label id="radarField">Radar<select id="radarSelect"><option value="all">Todos disponíveis</option></select></label>
-        <div class="control-row"><span>Mapa</span><div class="segmented"><button id="view2d" type="button" class="active">2D</button><button id="view3d" type="button">3D</button></div></div>
-        <div class="control-row"><span>Camadas</span><div class="layer-buttons"><button id="lightningToggle" type="button" aria-pressed="false" title="Raios GLM — GOES-East / NOAA">Raios — GLM</button><button id="markerToggle" type="button" class="active" aria-pressed="true">Radares</button><button id="coverageToggle" type="button" class="active" aria-pressed="true">Áreas</button><button id="trackToggle" type="button" class="active" aria-pressed="true">Trajetos</button><button id="statesToggle" type="button" class="active" aria-pressed="true">Estados</button><button id="municipalitiesToggle" type="button" class="active" aria-pressed="true">Municípios</button><button id="inmetAlertsToggle" type="button" class="active" aria-pressed="true" title="Avisos oficiais do INMET">Avisos INMET</button></div></div>
-        <small id="lightningStatus" class="lightning-status">GOES-East — GLM · atualizando…</small><small id="inmetAlertsStatus" class="inmet-alerts-status">INMET · consultando avisos oficiais…</small>
-        <label>Cor do mapa<select id="mapTheme"><option value="light">Claro</option><option value="gray">Cinza</option><option value="dark" selected>Escuro</option><option value="satellite">Satélite</option></select></label>
-        <div class="panel-actions"><button id="homeButton" type="button"><i class="ph ph-crosshair"></i> Brasil</button><button id="northButton" type="button"><i class="ph ph-compass"></i> Norte</button><button id="fullscreenButton" type="button"><i class="ph ph-corners-out"></i> Tela cheia</button><label class="download-format">Formato<select id="downloadFormat"><option value="png">PNG — quadro atual</option><option value="gif">GIF — animação</option></select></label><label class="download-quality">Qualidade da exportação<select id="downloadQuality"><option value="standard">Boa — arquivo menor</option><option value="high" selected>Alta — recomendada</option><option value="maximum">Máxima — mais demorada</option><option value="supreme4k">Suprema — 4K Ultra HD</option></select></label><button id="downloadRadar" class="download-radar" type="button"><i class="ph ph-download-simple"></i> Baixar PNG</button></div>
+        <label><span>Fonte de dados</span><select id="sourceSelect">
+          <option value="map">Selecione um radar no mapa</option>
+          <option value="all_no_rainviewer">Todos os radares — sem RainViewer</option>
+          <option value="rainviewer">Precipitação — mosaico (RainViewer)</option>
+          <option value="redemet">Radar REDEMET / DECEA</option>
+          <option value="cloudultra">CloudUltra Res</option>
+          <option value="cemaden">Radares CEMADEN / MCTI</option>
+          <option value="regional">Radares regionais</option>
+          <option value="inea">Radares INEA / RJ</option>
+          <option value="simepar">Radar SIMEPAR / PR</option>
+          <option value="ipmet">Radar IPMet / SP</option>
+        </select></label>
+        <label id="radarField"><span>Radar</span><select id="radarSelect"><option value="all">Todos disponíveis</option></select></label>
+        <div class="field-row"><span>Mapa</span><div class="segmented"><button id="view2d" type="button" class="active" aria-pressed="true">2D</button><button id="view3d" type="button" aria-pressed="false">3D</button></div></div>
+        <label><span>Fundo do mapa</span><select id="mapTheme">
+          <option value="light">Claro</option><option value="gray">Cinza</option><option value="dark" selected>Escuro</option><option value="satellite">Satélite</option>
+        </select></label>
+      </div>
+
+      <div id="layersTab" class="panel-tab-view" role="tabpanel" aria-labelledby="layersTabButton" data-panel-view="layers" hidden>
+        <div class="layer-list">
+          <button id="lightningToggle" type="button" class="layer-row" aria-pressed="false" title="Raios GLM — GOES-East / NOAA"><i class="ph ph-lightning"></i><span>Raios — GLM</span><em class="switch" aria-hidden="true"></em></button>
+          <small id="lightningStatus" class="lightning-status">GOES-East — GLM · atualizando…</small>
+          <button id="markerToggle" type="button" class="layer-row active" aria-pressed="true" title="Centros dos radares"><i class="ph ph-radar"></i><span>Centros dos radares</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="coverageToggle" type="button" class="layer-row active" aria-pressed="true" title="Áreas de cobertura dos radares"><i class="ph ph-circle-dashed"></i><span>Áreas de cobertura</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="trackToggle" type="button" class="layer-row active" aria-pressed="true" title="Trajetos estimados das células"><i class="ph ph-signpost"></i><span>Trajetos das células</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="statesToggle" type="button" class="layer-row active" aria-pressed="true" title="Limites estaduais"><i class="ph ph-map-trifold"></i><span>Estados</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="municipalitiesToggle" type="button" class="layer-row" aria-pressed="false" title="Limites municipais"><i class="ph ph-map-pin-line"></i><span>Municípios</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="inmetAlertsToggle" type="button" class="layer-row active" aria-pressed="true" title="Avisos oficiais do INMET"><i class="ph ph-warning"></i><span>Avisos INMET</span><em class="switch" aria-hidden="true"></em></button>
+          <small id="inmetAlertsStatus" class="lightning-status">INMET · consultando avisos oficiais…</small>
+        </div>
       </div>
 
       <div id="typeTab" class="panel-tab-view" role="tabpanel" aria-labelledby="typeTabButton" data-panel-view="type" hidden>
-        <div class="product-heading"><span>PRODUTO</span><strong id="productProfileTitle">CAPPI</strong><p id="productProfileDetail"></p></div>
-        <label id="productField">Tipo de produto<select id="productSelect"><option value="03km">Refletividade — CAPPI 3 km</option><option value="05km">CAPPI 5 km</option><option value="07km">CAPPI 7 km</option><option value="10km">CAPPI 10 km</option><option value="maxcappi">Refletividade composta — MAXCAPPI</option></select></label>
+        <div class="product-heading"><span>Produto selecionado</span><strong id="productProfileTitle">CAPPI</strong><p id="productProfileDetail">Selecione a fonte e o produto para visualizar os dados disponíveis.</p></div>
+        <label id="productField"><span>Tipo de produto</span><select id="productSelect"><option value="03km">Refletividade — CAPPI 3 km</option></select></label>
         <div id="productTiles" class="product-tiles" aria-label="Produtos disponíveis"></div>
         <div id="unavailableProducts" class="product-unavailable" hidden></div>
       </div>
 
       <div id="visualTab" class="panel-tab-view" role="tabpanel" aria-labelledby="visualTabButton" data-panel-view="visual" hidden>
-      <label>Modo<select id="renderMode"><option value="standard">Padrão</option><option value="radiais">Radiais</option><option value="pixel">Pixel</option><option value="mirror">RadarScope</option><option value="usa_radial" selected>RadarScope HD</option><option value="radarscope_v2_hd">Radar Scope V2 HD</option><option value="brazil_scope">Brazil Scope</option><option value="brazil_scope_v2">Brazil Scope V2</option><option value="brasil_scope_v3">Brasil Scope V3</option><option value="brasil_scope_v4">Brasil Scope V4</option><option value="brasil_scope_v5">Brasil Scope V5 - Super-Res polar</option><option value="sideral_hub">SideralHub</option><option value="super_res">Super Res · malha polar nativa</option><option value="super_res_v2">Super Res V2</option></select></label>
-        <label>Paleta do radar<select id="paletteSelect">
+        <label><span>Modo de renderização</span><select id="renderMode">
+          <option value="standard">Padrão</option><option value="radiais">Radiais</option><option value="pixel">Pixel</option><option value="mirror">RadarScope</option><option value="usa_radial" selected>RadarScope HD</option><option value="radarscope_v2_hd">Radar Scope V2 HD</option><option value="brazil_scope">Brazil Scope</option><option value="brazil_scope_v2">Brazil Scope V2</option><option value="brasil_scope_v3">Brasil Scope V3</option><option value="brasil_scope_v4">Brasil Scope V4</option><option value="brasil_scope_v5">Brasil Scope V5 — Super-Res polar</option><option value="sideral_hub">SideralHub</option><option value="super_res">Super Res — malha polar nativa</option><option value="super_res_v2">Super Res V2</option>
+        </select></label>
+        <label><span>Paleta do radar</span><select id="paletteSelect">
           <optgroup label="WxTools — Refletividade">
-            <option value="wx_radarscope" selected>WxTools · RadarScope</option>
-            <option value="wx_radarscope_v2_hd">Radar Scope V2 HD · nítida</option>
-            <option value="wx_scope5">Brasil Scope V5 · PPI polar</option>
-            <option value="wx_scope4">Brasil Scope V4 · polar gates</option>
-            <option value="wx_radiais">Radiais · refletividade nativa</option>
-            <option value="wx_nws_crh">WxTools · NWS CRH</option>
-            <option value="wx_nssl_iii">WxTools · NSSL III</option>
-            <option value="wx_quad_weather">WxTools · Quad Weather</option>
-            <option value="wx_jesse_radar">WxTools · Jesse Radar</option>
-            <option value="wx_nws_sr">WxTools · NWS SR</option>
-            <option value="wx_awips">WxTools · AWIPS</option>
-            <option value="wx_gr2analyst">WxTools · GR2Analyst</option>
-            <option value="wx_nexrad_hd">WxTools · NEXRAD HD</option>
-            <option value="wx_dark_sky">WxTools · Dark Sky</option>
-            <option value="wx_tropical_hd">WxTools · Tropical HD</option>
-          </optgroup>
-          <optgroup label="Doppler e polarimetria">
+            <option value="wx_radarscope" selected>WxTools · RadarScope</option><option value="wx_radarscope_v2_hd">Radar Scope V2 HD · nítida</option><option value="wx_scope5">Brasil Scope V5 · PPI polar</option><option value="wx_scope4">Brasil Scope V4 · polar gates</option><option value="wx_radiais">Radiais · refletividade nativa</option><option value="wx_nws_crh">WxTools · NWS CRH</option><option value="wx_nssl_iii">WxTools · NSSL III</option><option value="wx_quad_weather">WxTools · Quad Weather</option><option value="wx_jesse_radar">WxTools · Jesse Radar</option><option value="wx_nws_sr">WxTools · NWS SR</option><option value="wx_awips">WxTools · AWIPS</option><option value="wx_gr2analyst">WxTools · GR2Analyst</option><option value="wx_nexrad_hd">WxTools · NEXRAD HD</option><option value="wx_dark_sky">WxTools · Dark Sky</option><option value="wx_tropical_hd">WxTools · Tropical HD</option>
           </optgroup>
           <optgroup label="Sideral / compatibilidade">
-            <option value="super_res">Super Res · estilo NWS Sideral</option>
-            <option value="super_res_v2">Super Res V2</option>
-            <option value="normal">Original da fonte</option>
-            <option value="nws">NWS operacional</option>
-            <option value="nws_enhanced">NWS realçada</option>
-            <option value="mobile">Cores vivas</option>
-            <option value="usa_mirror">RadarScope — refletividade forte</option>
-            <option value="classic">Clássica</option>
-            <option value="hd_pixel">HD / Pixel</option>
-            <option value="tropical">Tropical</option>
-            <option value="ocean">Oceano</option>
-            <option value="plasma">Plasma</option>
-            <option value="magma">Magma</option>
-            <option value="infrared">Infravermelho</option>
-            <option value="grayscale">Escala de cinza</option>
-            <option value="ice">Gelo</option>
-            <option value="fire">Fogo</option>
-            <option value="colorblind">Alto contraste acessível</option>
-            <option value="deuteranopia">Deuteranopia</option>
-            <option value="pastel">Pastel</option>
-            <option value="storm">Tempestade</option>
-            <option value="high_contrast">Contraste máximo</option>
+            <option value="super_res">Super Res · estilo NWS Sideral</option><option value="super_res_v2">Super Res V2</option><option value="normal">Original da fonte</option><option value="nws">NWS operacional</option><option value="nws_enhanced">NWS realçada</option><option value="mobile">Cores vivas</option><option value="usa_mirror">RadarScope — refletividade forte</option><option value="classic">Clássica</option><option value="hd_pixel">HD / Pixel</option><option value="tropical">Tropical</option><option value="ocean">Oceano</option><option value="plasma">Plasma</option><option value="magma">Magma</option><option value="infrared">Infravermelho</option><option value="grayscale">Escala de cinza</option><option value="ice">Gelo</option><option value="fire">Fogo</option><option value="colorblind">Alto contraste acessível</option><option value="deuteranopia">Deuteranopia</option><option value="pastel">Pastel</option><option value="storm">Tempestade</option><option value="high_contrast">Contraste máximo</option>
           </optgroup>
         </select><small id="paletteHelp" hidden></small></label>
-        <label>Qualidade da imagem<select id="renderQuality"><option value="balanced">Média</option><option value="high">Alta</option><option value="ultra">Ultra</option><option value="extreme" selected>Máxima — resolução nativa</option><option value="supreme4k">Suprema — 4K Ultra HD</option></select></label>
-        <label class="range-label"><span>Opacidade do radar <output id="opacityValue">100%</output></span><input id="opacityRange" type="range" min="0" max="100" value="100"></label>
+        <label><span>Qualidade da imagem</span><select id="renderQuality"><option value="balanced">Média</option><option value="high">Alta</option><option value="ultra">Ultra</option><option value="extreme" selected>Máxima — resolução nativa</option><option value="supreme4k">Suprema — 4K Ultra HD</option></select></label>
+        <label class="range-label"><span class="range-head"><span>Opacidade do radar</span><output id="opacityValue">100%</output></span><input id="opacityRange" type="range" min="0" max="100" value="100"></label>
+      </div>
+
+      <div id="exportTab" class="panel-tab-view" role="tabpanel" aria-labelledby="exportTabButton" data-panel-view="export" hidden>
+        <label class="download-format"><span>Formato</span><select id="downloadFormat"><option value="png">PNG — quadro atual</option><option value="gif">GIF — animação</option></select></label>
+        <label class="download-quality"><span>Qualidade da exportação</span><select id="downloadQuality"><option value="standard">Boa — arquivo menor</option><option value="high" selected>Alta — recomendada</option><option value="maximum">Máxima — 4K</option><option value="supreme4k">Suprema — 4K Ultra HD</option></select></label>
+        <button id="downloadRadar" class="download-radar" type="button"><i class="ph ph-download-simple"></i> Baixar PNG</button>
       </div>
     </section>
+
+    <div class="watermark" aria-hidden="true">sideralmeteorologia.com.br</div>
+
+    <section class="timeline" aria-label="Animação do radar">
+      <div class="playback"><button id="prevFrame" type="button" aria-label="Quadro anterior"><i class="ph ph-skip-back"></i></button><button id="playPause" class="play-main" type="button" aria-label="Reproduzir"><i class="ph ph-play"></i></button><button id="nextFrame" type="button" aria-label="Próximo quadro"><i class="ph ph-skip-forward"></i></button></div>
+      <div class="timeline-track">
+        <div class="time-readout"><strong id="currentTime">—</strong><span class="range-times"><span id="firstTime">—</span><i class="ph ph-arrow-right" aria-hidden="true"></i><span id="lastTime">—</span></span></div>
+        <input id="frameSlider" type="range" min="0" max="0" value="0" aria-label="Quadro da animação">
+      </div>
+      <select id="speedSelect" class="speed-select" aria-label="Velocidade"><option value="0" selected>Delay 0 · contínuo</option><option value="0.5">0,5×</option><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select>
+    </section>
+
+    <div class="dbz-legend" aria-label="Legenda de refletividade"><strong>dBZ</strong><div class="dbz-scale"></div><div class="dbz-values"><span>5</span><span>20</span><span>35</span><span>50</span><span>65</span><span>70+</span></div></div>
+
     <div class="radar-tutorial" id="radarTutorial" aria-hidden="true">
       <section class="radar-tutorial-card" role="dialog" aria-modal="true" aria-labelledby="radarTutorialTitle">
         <button class="radar-tutorial-close" id="radarTutorialClose" type="button" aria-label="Fechar tutorial">×</button>
@@ -106,20 +145,12 @@
         <div class="radar-tutorial-actions"><button class="radar-tutorial-skip" id="radarTutorialSkip" type="button">Pular</button><button class="radar-tutorial-next" id="radarTutorialNext" type="button">Próximo <i class="ph ph-arrow-right"></i></button></div>
       </section>
     </div>
-    <div class="radar-palette-warning" id="radarPaletteWarning" aria-hidden="true">
-      <div class="radar-palette-warning-card" role="dialog" aria-modal="true" aria-labelledby="radarPaletteWarningTitle">
-        <div class="radar-palette-warning-icon" aria-hidden="true">!</div>
-        <h2 id="radarPaletteWarningTitle">Compatibilidade de paleta</h2>
-        <p>Para visualizar todos os radares com mais compatibilidade, recomendamos a paleta <strong>Deuteranopia (deuteranotropia)</strong>. Algumas fontes podem não renderizar corretamente com outras paletas.</p>
-        <button id="radarPaletteWarningOk" type="button">Entendi</button>
-      </div>
-    </div>
-    <aside id="radarStatus" class="radar-status" role="status" aria-live="polite"><strong id="statusTitle">Carregando o radar…</strong><span id="statusDetail">Buscando as imagens mais recentes.</span><dl><div><dt>Varredura</dt><dd id="scanTime">—</dd></div><div><dt>Origem</dt><dd id="dataOrigin">—</dd></div></dl></aside>
-    <section class="timeline" aria-label="Animação do radar"><div class="playback"><button id="prevFrame" type="button" aria-label="Quadro anterior"><i class="ph ph-skip-back"></i></button><button id="playPause" type="button" aria-label="Reproduzir"><i class="ph ph-play"></i></button><button id="nextFrame" type="button" aria-label="Próximo quadro"><i class="ph ph-skip-forward"></i></button><select id="speedSelect" aria-label="Velocidade"><option value="0" selected>Delay 0 · contínuo</option><option value="0.5">0,5×</option><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></div><div class="timeline-track"><input id="frameSlider" type="range" min="0" max="0" value="0"><div><span id="firstTime">—</span><strong id="currentTime">—</strong><span id="lastTime">—</span></div></div></section>
-    <div class="dbz-legend" aria-label="Legenda de refletividade"><strong>dBZ</strong><div class="dbz-scale"></div><div class="dbz-values"><span>5</span><span>20</span><span>35</span><span>50</span><span>65</span><span>70+</span></div></div>
-    <div id="loadingScreen" class="radar-loading"><img src="Logotipo_da_Área_de_Tecnologia_e_Games_Audio_Cinza-removebg-preview.png" alt="Sideral"><span>Carregando radar…</span></div>
+
+    <div id="loadingScreen" class="radar-loading"><span class="ph ph-radar"></span><span>Carregando radar…</span></div>
   </main>
-  <noscript>A.</noscript>
+
+  <noscript>Ative o JavaScript para visualizar o radar meteorológico.</noscript>
+
   <script>
     (() => {
       const overlay=document.getElementById('radarTutorial');
@@ -132,8 +163,8 @@
       if(!overlay||!title||!text||!dots||!next)return;
       const steps=[
         ['Conheça o Radar','Veja os ecos meteorológicos mais recentes no mapa e acompanhe a varredura em tempo real.'],
-        ['Escolha a fonte','Em Fonte e Radar você pode selecionar REDEMET, CEMADEN e radares regionais disponíveis.'],
-        ['Controle o produto','Abra Tipo para escolher CAPPI e outros produtos; em Visual ajuste modo, paleta e opacidade.'],
+        ['Escolha a fonte','Selecione REDEMET, CloudUltra Res, CEMADEN ou uma das redes regionais disponíveis.'],
+        ['Controle o produto','Em Produto escolha CAPPI e outras variáveis; em Visual ajuste renderização, paleta e opacidade.'],
         ['Use a timeline','Arraste a linha do tempo ou use play para revisar os quadros recentes da animação.']
       ];
       let index=0;
@@ -149,47 +180,38 @@
   </script>
   <script>
     (() => {
-      const releaseRadarScreen = () => document.getElementById('loadingScreen')?.classList.add('hidden');
-      window.__sideralRadarLoadingTimer = window.setTimeout(releaseRadarScreen, 8000);
-      window.addEventListener('error', event => {
-        if (String(event.filename || '').includes('/radar/')) releaseRadarScreen();
-      }, true);
-      window.addEventListener('unhandledrejection', releaseRadarScreen);
+      const releaseRadarScreen=()=>document.getElementById('loadingScreen')?.classList.add('hidden');
+      window.__sideralRadarLoadingTimer=window.setTimeout(releaseRadarScreen,8000);
+      window.addEventListener('error',event=>{if(String(event.filename||'').includes('/radar/'))releaseRadarScreen();},true);
+      window.addEventListener('unhandledrejection',releaseRadarScreen);
     })();
   </script>
   <script>
-    // Mantém a paleta Doppler disponível como tratamento visual da refletividade.
     document.addEventListener('DOMContentLoaded',()=>{
       const select=document.getElementById('paletteSelect');
       if(select&&!select.querySelector('option[value="wx_doppler"]')){
-        const option=new Option('Doppler - paleta visual','wx_doppler');
+        const option=new Option('Doppler — paleta visual','wx_doppler');
         (select.querySelector('optgroup')||select).append(option);
       }
     });
   </script>
   <script>
     (() => {
-      const overlay = document.getElementById('radarPaletteWarning');
-      const closeButton = document.getElementById('radarPaletteWarningOk');
-      if (!overlay || !closeButton) return;
-      const close = () => {
-        document.body.classList.remove('radar-palette-warning-open');
-        overlay.setAttribute('aria-hidden', 'true');
-      };
-      const open = () => {
-        document.body.classList.add('radar-palette-warning-open');
-        overlay.setAttribute('aria-hidden', 'false');
-        closeButton.focus();
-      };
-      closeButton.addEventListener('click', close);
-      overlay.addEventListener('click', event => {
-        if (event.target === overlay) close();
-      });
-      window.addEventListener('keydown', event => {
-        if (event.key === 'Escape') close();
-      });
+      const app=document.getElementById('radarApp');
+      const panelToggle=document.getElementById('panelToggle');
+      document.querySelectorAll('[data-panel-tab]').forEach(button=>button.addEventListener('click',()=>{
+        document.getElementById('drawerTitle').textContent=button.dataset.title||'Radar';
+        app.classList.remove('panel-collapsed');
+        panelToggle?.setAttribute('aria-expanded','true');
+      }));
+      const localClock=document.getElementById('clockLocal');
+      const utcClock=document.getElementById('clockUtc');
+      const brClock=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+      const zClock=new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+      const tick=()=>{const now=new Date();localClock.textContent=brClock.format(now);utcClock.textContent=`${zClock.format(now)} UTC`;setTimeout(tick,1000-now.getMilliseconds()+8);};
+      tick();
     })();
   </script>
-<script type="module" src="radar/main.js?v=20261106-cloudultra-smooth4"></script>
+  <script type="module" src="radar/main.js?v=20261106-cloudultra-smooth4"></script>
 </body>
 </html>
