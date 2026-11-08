@@ -16,6 +16,7 @@ async function checkService(service: (typeof SERVICES)[number]) {
         Accept: service.kind === "image"
           ? "image/avif,image/webp,image/png,image/gif,*/*"
           : "*/*",
+        ...(service.group === "Satélite" ? { Origin: "https://nowcasting.cptec.inpe.br", Referer: "https://nowcasting.cptec.inpe.br/" } : {}),
         ...(service.body ? { "Content-Type": "application/json" } : {}),
       },
       body: service.method === "POST" ? service.body : undefined,
