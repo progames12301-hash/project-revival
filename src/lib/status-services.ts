@@ -1,5 +1,5 @@
 export const STATUS_INTERVAL_MS = 60_000;
-export type Service = { id: string; name: string; group: string; url: string; kind: string; body?: string };
+export type Service = { id: string; name: string; group: string; url: string; kind: string; method?: "GET" | "POST"; body?: string };
 export const SERVICES: Service[] = [
   {
     "id": "redemet",
@@ -70,6 +70,7 @@ export const SERVICES: Service[] = [
     "group": "Satélite",
     "url": "https://nowcasting.cptec.inpe.br/api/v1/products/times",
     "kind": "json",
+    "method": "POST",
     "body": "{\"items\": [{\"type\": \"layer\", \"workspace\": \"path-satelite\", \"layer\": \"path-satelite:goes19_web~ams_rgb_natcolor\"}]}"
   },
   {
@@ -154,6 +155,20 @@ export const SERVICES: Service[] = [
     "name": "WRF2 CBR 4 km",
     "group": "Modelos regionais",
     "url": "https://raw.githubusercontent.com/progames12301-hash/sideral-backend/cbr-wrf2-json-data/metadata.json",
+    "kind": "json"
+  },
+  {
+    "id": "cim-icon-8km",
+    "name": "CIM WRF ICON 8 km",
+    "group": "Modelos regionais",
+    "url": "https://raw.githubusercontent.com/progames12301-hash/sideral-backend/cim-wrf-3km-icon-data/metadata.json",
+    "kind": "json"
+  },
+  {
+    "id": "cim-ecmwf-8km",
+    "name": "CIM WRF ECMWF 8 km",
+    "group": "Modelos regionais",
+    "url": "https://raw.githubusercontent.com/progames12301-hash/sideral-backend/cim-wrf-3km-ecmwf-data/metadata.json",
     "kind": "json"
   },
   {
