@@ -116,7 +116,7 @@
     "family": "WRF",
     "grid": "21 km",
     "horizon": "",
-    "description": "Modelo numérico de abrangência nacional, desenvolvido para acompanhar a evolução dos principais sistemas meteorológicos sobre o Brasil. Com resolução de 21 km, oferece uma visão ampla dos padrões atmosféricos, auxiliando na análise de frentes frias, massas de ar, áreas de instabilidade e distribuição da precipitação.",
+    "description": "Modelo regional de abrangência nacional, voltado à evolução dos principais sistemas meteorológicos sobre o Brasil. A grade de 21 km oferece contexto de mesoescala para frentes, massas de ar, áreas de instabilidade e distribuição da precipitação.",
     "group": "regional"
   },
   {
@@ -124,7 +124,7 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Modelo de alta resolução dedicado à análise das condições meteorológicas na região de atuação CBR. Sua grade de 4 km permite maior detalhamento dos sistemas de precipitação, áreas de instabilidade e variações das condições atmosféricas, contribuindo para uma análise regional mais precisa.",
+    "description": "Modelo regional de alta resolução do domínio CBR, localizado no Nordeste do Brasil. Com grade de 4 km, detalha precipitação, vento, temperatura e áreas de instabilidade na região.",
     "group": "regional"
   },
   {
@@ -132,7 +132,7 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Segunda configuração do modelo WRF para a região CBR. Atua como uma perspectiva complementar à primeira simulação, permitindo comparar a evolução dos campos meteorológicos e identificar diferenças entre os cenários previstos.",
+    "description": "Segunda configuração do WRF CBR, também com grade de 4 km e domínio no Nordeste do Brasil. Complementa a primeira simulação e permite comparar a evolução prevista dos sistemas meteorológicos regionais.",
     "group": "regional"
   },
   {
@@ -140,7 +140,7 @@
     "family": "WRF",
     "grid": "3 km",
     "horizon": "",
-    "description": "Modelo de alta resolução voltado ao acompanhamento detalhado das condições atmosféricas na região TARC. Com resolução de 3 km, proporciona maior representação dos fenômenos de mesoescala, favorecendo a análise de áreas de instabilidade, chuva intensa e evolução de sistemas convectivos.",
+    "description": "Modelo regional de 3 km voltado ao Sul do Brasil. Seu domínio também alcança áreas próximas ao Uruguai e à Argentina, permitindo acompanhar sistemas frontais, convecção e precipitação no setor sul da América do Sul.",
     "group": "regional"
   },
   {
@@ -148,7 +148,7 @@
     "family": "WRF",
     "grid": "3 km",
     "horizon": "",
-    "description": "Configuração complementar do WRF TARC, desenvolvida com resolução de 3 km. Sua utilização permite avaliar diferentes cenários de evolução atmosférica e ampliar a análise das condições previstas para a região.",
+    "description": "Configuração complementar do WRF TARC, com grade de 3 km no domínio do Sul do Brasil e áreas próximas do Uruguai e da Argentina. Permite comparar cenários de evolução atmosférica e distribuição da chuva.",
     "group": "regional"
   },
   {
@@ -156,7 +156,7 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Modelo regional de alta resolução voltado à previsão das condições meteorológicas no Sudeste do Brasil. Com resolução de 4 km, oferece detalhamento dos sistemas de chuva, instabilidades e variações atmosféricas, auxiliando no acompanhamento de eventos meteorológicos de escala regional.",
+    "description": "Modelo regional de 4 km para o domínio Sudeste, com cobertura centrada em São Paulo, Rio de Janeiro, Minas Gerais e Espírito Santo, alcançando áreas de transição do Centro-Sul. Detalha precipitação, temperatura, vento e instabilidade.",
     "group": "regional"
   },
   {
@@ -164,7 +164,7 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Segunda configuração do modelo SIDERAL WRF Sudeste, com resolução de 4 km. Disponibiliza uma perspectiva adicional da evolução atmosférica, permitindo comparar cenários e acompanhar possíveis mudanças na distribuição e intensidade dos fenômenos previstos.",
+    "description": "Segunda configuração do WRF SIDERAL Sudeste de 4 km. Mantém o domínio regional do Sudeste e oferece uma simulação complementar para comparação de precipitação, vento e evolução das instabilidades.",
     "group": "regional"
   },
   {
@@ -172,7 +172,7 @@
     "family": "WRF",
     "grid": "5 km",
     "horizon": "",
-    "description": "Modelo regional desenvolvido para representar a evolução dos sistemas meteorológicos sobre o Sudeste brasileiro. Com resolução de 5 km, oferece uma análise regional das condições atmosféricas, incluindo precipitação, temperatura, ventos e áreas de instabilidade.",
+    "description": "Modelo regional de 5 km para o domínio Sudeste, com cobertura centrada em São Paulo, Rio de Janeiro, Minas Gerais e Espírito Santo, alcançando áreas de transição do Centro-Sul. Representa os principais campos atmosféricos em escala regional.",
     "group": "regional"
   },
   {
@@ -180,7 +180,7 @@
     "family": "WRF",
     "grid": "5 km",
     "horizon": "",
-    "description": "Configuração complementar do WRF Sudeste de 5 km. A segunda simulação amplia as possibilidades de comparação entre cenários, contribuindo para uma avaliação mais abrangente da previsão meteorológica regional.",
+    "description": "Configuração complementar do WRF SIDERAL Sudeste de 5 km, no mesmo domínio regional. Permite comparar cenários de precipitação, temperatura, vento e organização dos sistemas meteorológicos.",
     "group": "regional"
   },
   {
@@ -188,7 +188,7 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Modelo numérico de alta resolução desenvolvido para o acompanhamento das condições meteorológicas no Brasil. Com resolução de 4 km, disponibiliza campos atmosféricos detalhados para análise de precipitação, temperatura, vento e instabilidade, auxiliando na identificação e no acompanhamento de sistemas meteorológicos.",
+    "description": "Modelo de mesoescala METBR, com grade de 4 km. Disponibiliza campos atmosféricos de alta resolução para análise de precipitação, temperatura, vento, umidade e instabilidade dentro do domínio operacional publicado.",
     "group": "regional"
   },
   {
@@ -196,7 +196,23 @@
     "family": "WRF",
     "grid": "4 km",
     "horizon": "",
-    "description": "Segunda configuração do METBR WRF, com resolução de 4 km. Complementa a simulação principal e permite comparar diferentes cenários previstos, oferecendo uma perspectiva adicional sobre a evolução das condições atmosféricas.",
+    "description": "Segunda configuração do METBR WRF, com grade de 4 km. Complementa a simulação principal e permite comparar campos de precipitação, temperatura, vento, umidade e instabilidade no domínio operacional publicado.",
+    "group": "regional"
+  },
+  {
+    "name": "CIM WRF ICON — 8 km",
+    "family": "CIM / WRF",
+    "grid": "8 km",
+    "horizon": "F000–F040 · horário",
+    "description": "Modelo regional de mesoescala do CIM, inicializado com o ICON. Grade de 8 km, com domínio sobre o Sul e o Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
+    "group": "regional"
+  },
+  {
+    "name": "CIM WRF ECMWF — 8 km",
+    "family": "CIM / WRF",
+    "grid": "8 km",
+    "horizon": "F000–F040 · horário",
+    "description": "Modelo regional de mesoescala do CIM, inicializado com o ECMWF. Grade de 8 km, com domínio sobre o Sul e o Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
     "group": "regional"
   }
 ]
