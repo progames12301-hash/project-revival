@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101216">
+  <title>Status dos sistemas — Sideral Meteorologia</title>
+  <meta name="description" content="Monitoramento dos sistemas, modelos e fontes de dados da Sideral Meteorologia.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/status.css">
+  <link rel="icon" href="favicon.png" type="image/png">
+</head>
+<body>
+  <div class="site-shell status-shell">
+    <header class="site-header status-header">
+      <div class="container-sideral header-inner">
+        <a class="brand" href="index.html" aria-label="Sideral Meteorologia — início">
+          <img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213">
+        </a>
+        <nav class="header-nav" aria-label="Navegação principal">
+          <a href="index.html">Início</a>
+          <a href="index.html#modelos">Modelos</a>
+          <a href="satelite.html">Satélite</a>
+          <a href="status.html" aria-current="page">Status</a>
+        </nav>
+        <div class="header-actions">
+          <a class="btn btn-sideral btn-md" href="login.html">Acessar plataforma</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="status-main">
+      <div class="container-sideral">
+        <div class="status-heading">
+          <span class="micro-label">MONITORAMENTO OPERACIONAL</span>
+          <h1>Status dos sistemas.</h1>
+          <p>Verificação automática das fontes, serviços e publicações que alimentam a plataforma Sideral.</p>
+        </div>
+
+        <section class="status-overview" aria-label="Resumo dos sistemas">
+          <article class="status-overview-card">
+            <span>Operacionais</span>
+            <strong id="countOperational">—</strong>
+          </article>
+          <article class="status-overview-card">
+            <span>Com lentidão</span>
+            <strong id="countDegraded">—</strong>
+          </article>
+          <article class="status-overview-card">
+            <span>Indisponíveis</span>
+            <strong id="countUnavailable">—</strong>
+          </article>
+          <article class="status-overview-card">
+            <span>Total monitorado</span>
+            <strong id="countTotal">—</strong>
+          </article>
+        </section>
+
+        <div class="status-toolbar">
+          <div>
+            <strong id="overallLabel">Aguardando primeira verificação</strong>
+            <span id="lastChecked">Nenhuma consulta realizada.</span>
+          </div>
+          <button id="refreshStatus" class="btn btn-quiet btn-md" type="button">
+            <span class="refresh-icon" aria-hidden="true">↻</span> Atualizar agora
+          </button>
+        </div>
+
+        <div class="status-legend" aria-label="Legenda dos estados">
+          <span><i class="state-dot operational"></i> Operacional</span>
+          <span><i class="state-dot degraded"></i> Lento</span>
+          <span><i class="state-dot unavailable"></i> Indisponível</span>
+          <span id="nextCheck">Atualização automática a cada 60 segundos</span>
+        </div>
+
+        <div id="statusGroups" class="status-groups" aria-live="polite">
+          <div class="status-loading">Consultando os serviços cadastrados…</div>
+        </div>
+
+        <p class="status-footnote">O monitor verifica a resposta HTTP de cada serviço a cada 60 segundos. Uma resposta válida confirma conectividade do endpoint, mas não garante, por si só, que todos os horários de previsão ou produtos estejam atualizados.</p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container-sideral footer-inner">
+        <a class="brand" href="index.html" aria-label="Sideral Meteorologia — início">
+          <img class="brand-logo" src="assets/sideral-logo.png" alt="Sideral Meteorologia" width="380" height="213">
+        </a>
+        <span>© 2026 Sideral Meteorologia</span>
+        <a href="index.html">Voltar ao início ↑</a>
+      </div>
+    </footer>
+  </div>
+  <script src="js/status.js" defer></script>
+</body>
+</html>
