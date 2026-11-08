@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0f15">
+  <title>Satélite GOES-19 — Sideral Meteorologia</title>
+  <meta name="description" content="Imagens GOES-19, canais visíveis e infravermelhos, RGB, AMV, TATHU e LightningCast da Sideral.">
+  <meta property="og:title" content="Satélite GOES-19 — Sideral Meteorologia">
+  <meta property="og:description" content="Monitoramento de satélite com imagens e animações CPTEC/INPE.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.css">
+  <!-- Reutiliza a folha de estilos da interface original enviada. -->
+  <link rel="stylesheet" href="satelite/satelite.css">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.js"></script>
+  <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+<body class="radar-page">
+  <main id="radarApp" class="radar-app panel-collapsed">
+    <nav class="rail" aria-label="Satélite">
+      <a class="rail-brand" href="dashboard.html" data-tip="Voltar ao site" aria-label="Voltar ao site">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5" fill="none" stroke="#ef2b2d" stroke-width="3.8" stroke-linecap="round"/></svg>
+      </a>
+      <div class="rail-tabs" role="tablist" aria-label="Seções dos controles" aria-orientation="vertical">
+        <button id="radarTabButton" class="rail-tab active" type="button" role="tab" aria-selected="true" aria-controls="radarTab" data-panel-tab="radar" data-title="Satélite" data-tip="Satélite" aria-label="Satélite"><i class="ph ph-satellite"></i></button>
+        <button id="layersTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="layersTab" data-panel-tab="layers" data-title="Camadas" data-tip="Camadas" aria-label="Camadas"><i class="ph ph-stack"></i></button>
+        <button id="typeTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="typeTab" data-panel-tab="type" data-title="Produto" data-tip="Produto" aria-label="Produto"><i class="ph ph-sliders-horizontal"></i></button>
+        <button id="visualTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="visualTab" data-panel-tab="visual" data-title="Visual" data-tip="Visual" aria-label="Visual"><i class="ph ph-palette"></i></button>
+        <button id="exportTabButton" class="rail-tab" type="button" role="tab" aria-selected="false" aria-controls="exportTab" data-panel-tab="export" data-title="Exportar" data-tip="Exportar" aria-label="Exportar"><i class="ph ph-download-simple"></i></button>
+      </div>
+      <div class="rail-links">
+        <a href="cptec-inpe-previsoes.html" data-tip="Previsão" aria-label="Previsão"><i class="ph ph-cloud-sun"></i></a>
+        <a href="index.html#sobre" data-tip="Sobre" aria-label="Sobre"><i class="ph ph-info"></i></a>
+      </div>
+    </nav>
+
+    <div id="radarMap" class="radar-map" aria-label="Mapa meteorológico de satélite GOES-19"></div>
+
+    <aside id="radarStatus" class="radar-status" role="status" aria-live="polite">
+      <span id="providerBadge" class="status-badge loading">Conectando</span>
+      <strong id="statusTitle">Carregando satélite…</strong>
+      <span id="statusDetail">Consultando imagens mais recentes do CPTEC/INPE.</span>
+      <dl><div><dt>Varredura</dt><dd id="scanTime">—</dd></div><div><dt>Origem</dt><dd id="dataOrigin">GOES-19 / CPTEC</dd></div></dl>
+    </aside>
+
+    <div class="top-right">
+      <div class="clock" aria-label="Horário atual"><strong><span id="clockLocal">--:--:--</span> <small>BR</small></strong><em id="clockUtc">--:-- UTC</em></div>
+      <div class="map-tools" role="toolbar" aria-label="Ferramentas do mapa">
+        <button id="homeButton" type="button" data-tip="Enquadrar a imagem" aria-label="Enquadrar a imagem"><i class="ph ph-globe-hemisphere-west"></i></button>
+        <button id="northButton" type="button" data-tip="Norte para cima" aria-label="Norte para cima"><i class="ph ph-compass"></i></button>
+        <button id="fullscreenButton" type="button" data-tip="Tela cheia" aria-label="Tela cheia"><i class="ph ph-corners-out"></i></button>
+      </div>
+    </div>
+
+    <section class="radar-panel" aria-label="Controles do satélite">
+      <div class="drawer-head">
+        <h2 id="drawerTitle">Satélite</h2>
+        <button id="panelToggle" class="panel-toggle" type="button" aria-label="Fechar painel" aria-expanded="false"><i class="ph ph-x"></i></button>
+      </div>
+
+      <div id="radarTab" class="panel-tab-view active" role="tabpanel" aria-labelledby="radarTabButton" data-panel-view="radar">
+        <label><span>Família de produtos</span><select id="sourceSelect"><option value="goes19">GOES-19 — canais</option><option value="rgb">Composições RGB</option><option value="wind">Ventos — AMV</option></select></label>
+        <div class="field-row"><span>Mapa</span><div class="segmented"><button id="view2d" type="button" class="active" aria-pressed="true">2D</button><button id="view3d" type="button" aria-pressed="false">3D</button></div></div>
+        <label><span>Fundo do mapa</span><select id="mapTheme"><option value="light">Claro — Positron</option><option value="gray">Claro sem rótulos</option><option value="dark">Escuro — Dark Matter</option><option value="darkNoLabels">Escuro sem rótulos</option><option value="voyager">Voyager — ruas</option><option value="voyagerNoLabels">Voyager sem rótulos</option><option value="voyagerLabelsUnder">Voyager — rótulos abaixo</option><option value="satellite">Satélite — Esri</option><option value="satelliteLabels">Satélite com rótulos</option><option value="topo">Topográfico — Esri</option><option value="streets">Ruas — Esri</option><option value="terrain">Relevo — Esri</option></select></label>
+      </div>
+
+      <div id="layersTab" class="panel-tab-view" role="tabpanel" aria-labelledby="layersTabButton" data-panel-view="layers" hidden>
+        <div class="layer-list">
+          <button id="bordersToggle" type="button" class="layer-row active" aria-pressed="true" title="Fronteiras, estados e linha de costa"><i class="ph ph-map-trifold"></i><span>Fronteiras e costa</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="labelsToggle" type="button" class="layer-row active" aria-pressed="true" title="Nomes de países, estados e cidades"><i class="ph ph-text-aa"></i><span>Rótulos do mapa</span><em class="switch" aria-hidden="true"></em></button>
+          <button id="lightningToggle" type="button" class="layer-row" aria-pressed="false" title="LightningCast — probabilidade de raios"><i class="ph ph-lightning"></i><span>LightningCast — raios</span><em class="switch" aria-hidden="true"></em></button>
+          <small id="lightningStatus" class="lightning-status">Camada opcional · desligada</small>
+          <button id="markerToggle" type="button" class="layer-row" aria-pressed="false" title="TATHU — diagnóstico de células convectivas"><i class="ph ph-cloud-lightning"></i><span>TATHU — células convectivas</span><em class="switch" aria-hidden="true"></em></button>
+          <small id="tathuStatus" class="lightning-status">Camada opcional · desligada</small>
+        </div>
+      </div>
+
+      <div id="typeTab" class="panel-tab-view" role="tabpanel" aria-labelledby="typeTabButton" data-panel-view="type" hidden>
+        <div class="product-heading"><span>Produto selecionado</span><strong id="productProfileTitle">RGB Cor Natural</strong><p id="productProfileDetail">GOES-19 · imagem composta disponível mais recente</p></div>
+        <label id="productField"><span>Produto de satélite</span><select id="productSelect">
+          <option value="goes19_web~ams_rgb_natcolor">RGB Cor Natural</option>
+          <option value="goes19_web~ams_ret_ch02_alta">Visível (0,64 μm)</option>
+          <option value="goes19_web~ams_realcada_alta">Janela (IR) realçada</option>
+          <option value="goes19_web~ams_ret_ch08_alta">Vapor d'água — alta atmosfera (6,2 μm)</option>
+        </select></label>
+        <div id="productTiles" class="product-tiles" aria-label="Produtos disponíveis"></div>
+        <div id="unavailableProducts" class="product-unavailable" hidden></div>
+      </div>
+
+      <div id="visualTab" class="panel-tab-view" role="tabpanel" aria-labelledby="visualTabButton" data-panel-view="visual" hidden>
+        <label><span>Interpolação da imagem</span><select id="renderMode"><option value="linear" selected>Suave — linear</option><option value="nearest">Nítida — pixels originais</option></select></label>
+        <label><span>Tratamento visual</span><select id="paletteSelect"><option value="natural" selected>Original do produto</option><option value="vivid">Saturação reforçada</option><option value="muted">Saturação reduzida</option><option value="grayscale">Escala de cinza</option></select></label>
+        <label class="range-label"><span class="range-head"><span>Opacidade da imagem</span><output id="opacityValue">100%</output></span><input id="opacityRange" type="range" min="0" max="100" value="100"></label>
+      </div>
+
+      <div id="exportTab" class="panel-tab-view" role="tabpanel" aria-labelledby="exportTabButton" data-panel-view="export" hidden>
+        <label class="download-format"><span>Formato</span><select id="downloadFormat"><option value="png">PNG — mapa atual</option></select></label>
+        <label class="download-quality"><span>Qualidade da exportação</span><select id="downloadQuality"><option value="high" selected>Alta — resolução exibida</option><option value="maximum">Máxima — tela cheia</option></select></label>
+        <button id="downloadRadar" class="download-radar" type="button"><i class="ph ph-download-simple"></i> Baixar PNG</button>
+      </div>
+    </section>
+
+    <div class="watermark" aria-hidden="true">sideralmeteorologia.com.br</div>
+
+    <section class="timeline" aria-label="Animação das imagens de satélite">
+      <div class="playback"><button id="prevFrame" type="button" aria-label="Quadro anterior"><i class="ph ph-skip-back"></i></button><button id="playPause" class="play-main" type="button" aria-label="Reproduzir"><i class="ph ph-play"></i></button><button id="nextFrame" type="button" aria-label="Próximo quadro"><i class="ph ph-skip-forward"></i></button></div>
+      <div class="timeline-track">
+        <div class="time-readout"><strong id="currentTime">—</strong><span class="range-times"><span id="firstTime">—</span><i class="ph ph-arrow-right" aria-hidden="true"></i><span id="lastTime">—</span></span></div>
+        <input id="frameSlider" type="range" min="0" max="0" value="0" aria-label="Quadro da animação">
+      </div>
+      <select id="speedSelect" class="speed-select" aria-label="Velocidade"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select>
+    </section>
+
+    <div id="loadingScreen" class="radar-loading"><img src="assets/sideral-logo.png" alt="Sideral"><span>Carregando satélite…</span></div>
+  </main>
+  <noscript>Ative o JavaScript para visualizar as imagens de satélite.</noscript>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const API = '/api/cptec/';
+    const TATHU_ID = 'path--satelite--goes19_web~tathu_web~diag';
+    const LIGHTNINGCAST_PATH = 'geojson-products/static/path--satelite-2--last_forecast/latest';
+    const products = [
+      {layer:'goes19_web~ams_rgb_natcolor', title:'RGB Cor Natural', group:'goes19', detail:'Composição RGB de cor natural', bounds:{west:-100.01,south:-55.99,east:-25.25,north:12.53}},
+      {layer:'goes19_web~ams_ret_ch02_alta', title:'Visível (0,64 μm)', group:'goes19', detail:'Canal visível — 0,64 μm', bounds:{west:-100.01,south:-55.99,east:-25.25,north:12.53}},
+      {layer:'goes19_web~ams_realcada_alta', title:'Janela (IR) realçada', group:'goes19', detail:'Infravermelho de janela realçado', bounds:{west:-100.01,south:-55.99,east:-25.25,north:12.53}},
+      {layer:'goes19_web~ams_ret_ch08_alta', title:'Vapor d’água — alta atmosfera (6,2 μm)', group:'goes19', detail:'Canal de vapor d’água — 6,2 μm', bounds:{west:-100.01,south:-55.99,east:-25.25,north:12.53}},
+      {layer:'rgb~rgb_airmass', title:'RGB massas de ar', group:'rgb', detail:'Composição RGB de massas de ar', bounds:{west:-145,south:-65,east:-5,north:65}},
+      {layer:'rgb~rgb_capsat', title:'RGB Capsat', group:'rgb', detail:'Composição RGB Capsat', bounds:{west:-145,south:-65,east:-5,north:65}},
+      {layer:'rgb~rgb_cloud_phase', title:'RGB fase da nuvem', group:'rgb', detail:'Composição RGB de fase da nuvem', bounds:{west:-145,south:-65,east:-5,north:65}},
+      {layer:'rgb~rgb_night', title:'RGB microfísica (noturno)', group:'rgb', detail:'Composição RGB de microfísica noturna', bounds:{west:-145,south:-65,east:-5,north:65}},
+      {layer:'vento~ch8_alta', title:'AMV — ventos derivados do satélite', group:'wind', detail:'Atmospheric Motion Vectors — AMV', bounds:{west:-120.0144,south:-69.9633,east:-10.022,north:25.0144}}
+    ];
+    const groups = {goes19:'GOES-19 — canais',rgb:'Composições RGB',wind:'Ventos — AMV'};
+    const $ = id => document.getElementById(id);
+    const app = $('radarApp');
+    const loadingScreen = $('loadingScreen');
+    const providerBadge = $('providerBadge');
+    const statusTitle = $('statusTitle');
+    const statusDetail = $('statusDetail');
+    const productSelect = $('productSelect');
+    const sourceSelect = $('sourceSelect');
+    const slider = $('frameSlider');
+    const playButton = $('playPause');
+    const tathuStatus = $('tathuStatus');
+    const lightningStatus = $('lightningStatus');
+
+    let activeProduct = products[0];
+    let times = [];
+    let frameIndex = 0;
+    let frameRequestId = 0;
+    let productRequestId = 0;
+    let frameUrl = '';
+    let frameCoordinates = null;
+    let playTimer = null;
+    let tathuData = null;
+    let lightningCastData = null;
+    let tathuEnabled = false;
+    let lightningCastEnabled = false;
+    let mapReady = false;
+    let firstFitDone = false;
+    let opacity = 1;
+    let resampling = 'linear';
+    let saturation = 0;
+    let contrast = 0;
+    let cachedTathuCatalog = null;
+    let styleReady = false;
+    let bordersEnabled = true;
+    let labelsEnabled = true;
+    let referenceData = null;
+    let referenceRequested = false;
+
+    function setStatus(state, title, detail) {
+      providerBadge.textContent = state === 'error' ? 'Indisponível' : state === 'loading' ? 'Carregando' : 'CPTEC / INPE';
+      providerBadge.classList.toggle('loading', state === 'loading');
+      providerBadge.classList.toggle('error', state === 'error');
+      statusTitle.textContent = title;
+      statusDetail.textContent = detail;
+    }
+
+    async function apiJson(path, options = {}) {
+      const response = await fetch(API + path, {cache:'no-store', signal:AbortSignal.timeout(20000), ...options, headers:{...(options.headers || {}), ...(options.body ? {'Content-Type':'application/json'} : {})}});
+      if (!response.ok) throw new Error(`CPTEC respondeu HTTP ${response.status} (${path.split('?')[0]})`);
+      return response.json();
+    }
+
+    function fmtLocal(value, includeDate = false) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('pt-BR', {timeZone:'America/Sao_Paulo', ...(includeDate ? {day:'2-digit',month:'2-digit',year:'numeric'} : {}), hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date) + ' BRT';
+    }
+
+    function timeCode(value) {
+      return new Date(value).toISOString().slice(0,16).replace(/\D/g,'');
+    }
+
+    function coordsFor(product) {
+      const b = product.bounds;
+      return [[b.west,b.north],[b.east,b.north],[b.east,b.south],[b.west,b.south]];
+    }
+
+    const CARTO = 'https://basemaps.cartocdn.com/';
+    const carto = path => CARTO + path;
+    const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+    const ESRI_LABELS = ESRI + 'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+    const CARTO_ATTR = '© OpenStreetMap © CARTO';
+    const ESRI_ATTR = 'Tiles © Esri';
+    // base: tiles do fundo; labels: tiles de rótulos desenhados ACIMA da imagem (null = sem rótulos ou rótulos já no fundo).
+    const themes = {
+      light:{base:carto('light_nolabels/{z}/{x}/{y}.png'),labels:carto('light_only_labels/{z}/{x}/{y}.png'),attr:CARTO_ATTR},
+      gray:{base:carto('light_nolabels/{z}/{x}/{y}.png'),labels:null,attr:CARTO_ATTR},
+      dark:{base:carto('dark_nolabels/{z}/{x}/{y}.png'),labels:carto('dark_only_labels/{z}/{x}/{y}.png'),attr:CARTO_ATTR},
+      darkNoLabels:{base:carto('dark_nolabels/{z}/{x}/{y}.png'),labels:null,attr:CARTO_ATTR},
+      voyager:{base:carto('rastertiles/voyager_nolabels/{z}/{x}/{y}.png'),labels:carto('rastertiles/voyager_only_labels/{z}/{x}/{y}.png'),attr:CARTO_ATTR},
+      voyagerNoLabels:{base:carto('rastertiles/voyager_nolabels/{z}/{x}/{y}.png'),labels:null,attr:CARTO_ATTR},
+      voyagerLabelsUnder:{base:carto('rastertiles/voyager/{z}/{x}/{y}.png'),labels:null,attr:CARTO_ATTR},
+      satellite:{base:ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',labels:null,attr:ESRI_ATTR},
+      satelliteLabels:{base:ESRI+'World_Imagery/MapServer/tile/{z}/{y}/{x}',labels:ESRI_LABELS,attr:ESRI_ATTR},
+      topo:{base:ESRI+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',labels:ESRI_LABELS,attr:ESRI_ATTR},
+      streets:{base:ESRI+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',labels:ESRI_LABELS,attr:ESRI_ATTR},
+      terrain:{base:ESRI+'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',labels:ESRI_LABELS,attr:ESRI_ATTR}
+    };
+    let currentTheme = 'light';
+
+    function mapStyle(theme) {
+      currentTheme = themes[theme] ? theme : 'light';
+      const t = themes[currentTheme];
+      return {version:8,sources:{basemap:{type:'raster',tiles:[t.base],tileSize:256,attribution:t.attr}},layers:[{id:'basemap-layer',type:'raster',source:'basemap'}]};
+    }
+
+    const map = new maplibregl.Map({
+      container:'radarMap', style:mapStyle('light'), center:[-55,-22], zoom:2.55,
+      minZoom:1.2, maxZoom:11, maxPitch:60, pitch:0, bearing:0,
+      attributionControl:true, preserveDrawingBuffer:true
+    });
+
+    function addImageLayer() {
+      if (!styleReady || !frameUrl || !frameCoordinates) return;
+      let source = map.getSource('satellite-frame');
+      if (source && typeof source.updateImage === 'function') {
+        source.updateImage({url:frameUrl, coordinates:frameCoordinates});
+      } else {
+        if (map.getLayer('satellite-image')) map.removeLayer('satellite-image');
+        if (map.getSource('satellite-frame')) map.removeSource('satellite-frame');
+        map.addSource('satellite-frame', {type:'image', url:frameUrl, coordinates:frameCoordinates});
+      }
+      if (!map.getLayer('satellite-image')) {
+        map.addLayer({id:'satellite-image',type:'raster',source:'satellite-frame',paint:{'raster-opacity':opacity,'raster-resampling':resampling,'raster-saturation':saturation,'raster-contrast':contrast}});
+      } else {
+        applyImageStyle();
+      }
+      installVectorLayers();
+      applyOverlayVisibility();
+    }
+
+    function applyImageStyle() {
+      if (!map.getLayer('satellite-image')) return;
+      map.setPaintProperty('satellite-image','raster-opacity',opacity);
+      map.setPaintProperty('satellite-image','raster-resampling',resampling);
+      map.setPaintProperty('satellite-image','raster-saturation',saturation);
+      map.setPaintProperty('satellite-image','raster-contrast',contrast);
+    }
+
+    function emptyGeoJSON() { return {type:'FeatureCollection',features:[]}; }
+
+    function installVectorLayers() {
+      if (!styleReady) return;
+      if (!map.getSource('tathu-data')) map.addSource('tathu-data',{type:'geojson',data:tathuData || emptyGeoJSON()});
+      if (!map.getLayer('tathu-fill')) map.addLayer({id:'tathu-fill',type:'fill',source:'tathu-data',paint:{'fill-color':['coalesce',['get','fillColor'],'#e6e600'],'fill-opacity':0.34}});
+      if (!map.getLayer('tathu-line')) map.addLayer({id:'tathu-line',type:'line',source:'tathu-data',paint:{'line-color':['coalesce',['get','fillColor'],'#e6e600'],'line-width':1.2,'line-opacity':0.9}});
+      if (!map.getSource('lightningcast-data')) map.addSource('lightningcast-data',{type:'geojson',data:lightningCastData || emptyGeoJSON()});
+      if (!map.getLayer('lightningcast-fill')) map.addLayer({id:'lightningcast-fill',type:'fill',source:'lightningcast-data',paint:{'fill-color':['coalesce',['get','color'],'#00cc00'],'fill-opacity':0.33}});
+      if (!map.getLayer('lightningcast-line')) map.addLayer({id:'lightningcast-line',type:'line',source:'lightningcast-data',paint:{'line-color':['coalesce',['get','color'],'#00cc00'],'line-width':0.6,'line-opacity':0.75}});
+      installReferenceLayers();
+    }
+
+    // Fronteiras, estados, costa e rótulos: sempre ACIMA da imagem de satélite (que é opaca).
+    const NE_BASE = 'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@';
+    const NE_FILES = {
+      countries:'/geojson/ne_50m_admin_0_boundary_lines_land.geojson',
+      states:'/geojson/ne_50m_admin_1_states_provinces_lines.geojson',
+      coast:'/geojson/ne_50m_coastline.geojson'
+    };
+
+    async function fetchNaturalEarth(file) {
+      for (const version of ['v5.1.2','master']) {
+        try {
+          const response = await fetch(NE_BASE + version + file);
+          if (response.ok) return await response.json();
+        } catch (error) { /* tenta a próxima origem */ }
+      }
+      return emptyGeoJSON();
+    }
+
+    async function loadReferenceData() {
+      if (referenceRequested) return;
+      referenceRequested = true;
+      const [countries, states, coast] = await Promise.all([
+        fetchNaturalEarth(NE_FILES.countries), fetchNaturalEarth(NE_FILES.states), fetchNaturalEarth(NE_FILES.coast)
+      ]);
+      referenceData = {countries, states, coast};
+      ['countries','states','coast'].forEach(key => {
+        const source = map.getSource('ref-' + key);
+        if (source) source.setData(referenceData[key]);
+      });
+    }
+
+    function installReferenceLayers() {
+      if (!styleReady) return;
+      const data = key => (referenceData && referenceData[key]) || emptyGeoJSON();
+      ['countries','states','coast'].forEach(key => {
+        if (!map.getSource('ref-' + key)) map.addSource('ref-' + key,{type:'geojson',data:data(key)});
+      });
+      const line = (id, source, width, opacity, color, minzoom) => {
+        if (map.getLayer(id)) return;
+        map.addLayer({id,type:'line',source,minzoom,layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':color,'line-width':width,'line-opacity':opacity}});
+      };
+      // Contorno claro por baixo + traço escuro por cima: legível em nuvem branca e em terra escura.
+      line('ref-coast-casing','ref-coast',['interpolate',['linear'],['zoom'],1,1.6,6,3],0.35,'#ffffff',0);
+      line('ref-states-casing','ref-states',['interpolate',['linear'],['zoom'],2,1.4,6,2.6],0.3,'#ffffff',2);
+      line('ref-countries-casing','ref-countries',['interpolate',['linear'],['zoom'],1,2.2,6,3.6],0.45,'#ffffff',0);
+      line('ref-coast','ref-coast',['interpolate',['linear'],['zoom'],1,0.7,6,1.4],0.85,'#1b2430',0);
+      line('ref-states','ref-states',['interpolate',['linear'],['zoom'],2,0.5,6,1.1],0.7,'#3b4656',2);
+      line('ref-countries','ref-countries',['interpolate',['linear'],['zoom'],1,1,6,1.8],0.95,'#0d131b',0);
+
+      const labelUrl = themes[currentTheme].labels;
+      if (labelUrl && !map.getSource('ref-labels-src')) map.addSource('ref-labels-src',{type:'raster',tiles:[labelUrl],tileSize:256,attribution:themes[currentTheme].attr});
+      if (labelUrl && !map.getLayer('ref-labels')) map.addLayer({id:'ref-labels',type:'raster',source:'ref-labels-src',paint:{'raster-opacity':1,'raster-fade-duration':0}});
+
+      // Ordem final (de baixo para cima): imagem → TATHU → LightningCast → fronteiras → rótulos.
+      ['tathu-fill','tathu-line','lightningcast-fill','lightningcast-line',
+       'ref-coast-casing','ref-states-casing','ref-countries-casing','ref-coast','ref-states','ref-countries','ref-labels']
+        .forEach(id => { if (map.getLayer(id)) map.moveLayer(id); });
+      applyOverlayVisibility();
+      loadReferenceData();
+    }
+
+    function applyOverlayVisibility() {
+      const set = (ids, visible) => ids.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id,'visibility',visible ? 'visible' : 'none'); });
+      set(['tathu-fill','tathu-line'],tathuEnabled);
+      set(['lightningcast-fill','lightningcast-line'],lightningCastEnabled);
+      set(['ref-coast-casing','ref-states-casing','ref-countries-casing','ref-coast','ref-states','ref-countries'],bordersEnabled);
+      set(['ref-labels'],labelsEnabled);
+    }
+
+    map.on('style.load', () => {
+      mapReady = true;
+      styleReady = true;
+      if (frameUrl) addImageLayer();
+      else { installVectorLayers(); applyOverlayVisibility(); }
+      if (!firstFitDone) {
+        firstFitDone = true;
+        fitCurrentProduct(false);
+      }
+    });
+
+    function fitCurrentProduct(animate = true) {
+      if (!mapReady) return;
+      const b = activeProduct.bounds;
+      map.fitBounds([[b.west,b.south],[b.east,b.north]],{padding:{top:110,bottom:110,left:window.innerWidth<720?50:90,right:window.innerWidth<720?15:90},duration:animate?500:0,maxZoom:4.2});
+    }
+
+    function updateTimeLabels() {
+      const selected = times[frameIndex];
+      $('currentTime').textContent = fmtLocal(selected, true);
+      $('firstTime').textContent = times.length ? fmtLocal(times[0]) : '—';
+      $('lastTime').textContent = times.length ? fmtLocal(times[times.length-1]) : '—';
+      $('scanTime').textContent = selected ? fmtLocal(selected) : '—';
+      slider.max = String(Math.max(0,times.length-1));
+      slider.value = String(frameIndex);
+      $('productProfileTitle').textContent = activeProduct.title;
+      $('productProfileDetail').textContent = `${activeProduct.detail} · ${times.length} quadros disponíveis`;
+      $('dataOrigin').textContent = activeProduct.group === 'wind' ? 'GOES-19 / CPTEC · AMV' : 'GOES-19 / CPTEC';
+    }
+
+    function frameUrlFor(time) {
+      return `${API}paths/frames/satelite/${encodeURIComponent(activeProduct.layer)}/${timeCode(time)}/full`;
+    }
+
+    function loadImage(url) {
+      return new Promise((resolve,reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('A imagem do CPTEC não pôde ser carregada pelo proxy.'));
+        image.src = url;
+      });
+    }
+
+    async function showFrame(index) {
+      if (!times.length) return;
+      frameIndex = Math.max(0,Math.min(times.length-1,index));
+      const selectedTime = times[frameIndex];
+      const requestId = ++frameRequestId;
+      const productAtRequest = activeProduct;
+      const url = frameUrlFor(selectedTime);
+      updateTimeLabels();
+      setStatus('loading',activeProduct.title,`Carregando varredura ${fmtLocal(selectedTime)}…`);
+      try {
+        await loadImage(url);
+        if (requestId !== frameRequestId || productAtRequest !== activeProduct) return;
+        frameUrl = url;
+        frameCoordinates = coordsFor(activeProduct);
+        addImageLayer();
+        setStatus('ok',activeProduct.title,`Imagem CPTEC/INPE · varredura ${fmtLocal(selectedTime)}.`);
+        if (tathuEnabled) await refreshTathu(selectedTime);
+      } catch (error) {
+        if (requestId !== frameRequestId) return;
+        setStatus('error','Imagem indisponível',`${error.message} Tente novamente em alguns instantes.`);
+      }
+    }
+
+    async function loadTimesForProduct(product, fit = false) {
+      const requestId = ++productRequestId;
+      stopPlayback();
+      const changedProduct = activeProduct.layer !== product.layer;
+      activeProduct = product;
+      if (changedProduct) {
+        // Não deixa a imagem anterior aparecer como se fosse o produto novo.
+        if (map.getLayer('satellite-image')) map.removeLayer('satellite-image');
+        if (map.getSource('satellite-frame')) map.removeSource('satellite-frame');
+        frameUrl = '';
+        frameCoordinates = null;
+      }
+      setStatus('loading',product.title,'Buscando os horários disponíveis para este produto…');
+      const body = {items:[{type:'layer',workspace:'path-satelite',layer:`path-satelite:${product.layer}`}]};
+      const result = await apiJson('products/times',{method:'POST',body:JSON.stringify(body)});
+      if (requestId !== productRequestId) return;
+      const values = (Array.isArray(result.new_times) && result.new_times.length ? result.new_times : result.times) || [];
+      const now = Date.now() + 2*60*1000;
+      times = [...new Set(values.filter(v => Number.isFinite(Date.parse(v)) && Date.parse(v) <= now))].sort((a,b)=>Date.parse(a)-Date.parse(b));
+      if (!times.length) throw new Error(`O CPTEC não retornou horários para ${product.title}.`);
+      frameIndex = times.length-1;
+      $('unavailableProducts').hidden = true;
+      updateTimeLabels();
+      renderProductTiles();
+      if (fit) fitCurrentProduct(true);
+      await showFrame(frameIndex);
+    }
+
+    function setOptionsForGroup(group) {
+      const list = products.filter(p => p.group === group);
+      productSelect.replaceChildren(...list.map(p => new Option(p.title,p.layer)));
+      if (!list.some(p => p.layer === activeProduct.layer)) {
+        productSelect.value = list[0].layer;
+        loadProductByLayer(productSelect.value,true);
+      } else {
+        productSelect.value = activeProduct.layer;
+      }
+      renderProductTiles();
+    }
+
+    function loadProductByLayer(layer, fit = true) {
+      const product = products.find(p => p.layer === layer);
+      if (!product) return;
+      sourceSelect.value = product.group;
+      if (productSelect.value !== product.layer) productSelect.value = product.layer;
+      loadTimesForProduct(product,fit).catch(error => {
+        $('unavailableProducts').hidden = false;
+        $('unavailableProducts').textContent = error.message;
+        setStatus('error','Não foi possível carregar os horários',error.message);
+      });
+    }
+
+    function renderProductTiles() {
+      const holder = $('productTiles');
+      holder.replaceChildren();
+      products.filter(p => p.group === sourceSelect.value).forEach(p => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `product-tile${p.layer === activeProduct.layer ? ' active' : ''}`;
+        button.textContent = p.title;
+        button.setAttribute('aria-pressed',String(p.layer === activeProduct.layer));
+        button.addEventListener('click',() => loadProductByLayer(p.layer,true));
+        holder.append(button);
+      });
+    }
+
+    async function fetchTathuCatalog() {
+      if (cachedTathuCatalog) return cachedTathuCatalog;
+      const catalog = await apiJson('geojson-products/catalog?include_times=true');
+      cachedTathuCatalog = Array.isArray(catalog) ? catalog.find(p => p.id === TATHU_ID) : null;
+      return cachedTathuCatalog;
+    }
+
+    async function refreshTathu(time) {
+      try {
+        const product = await fetchTathuCatalog();
+        let chosen = time;
+        const available = (product && (product.available_times_normal || product.available_times)) || [];
+        const earlier = available.filter(t => Date.parse(t) <= Date.parse(time)).sort((a,b)=>Date.parse(a)-Date.parse(b));
+        if (earlier.length) chosen = earlier[earlier.length-1];
+        else if (available.length) chosen = available.slice().sort((a,b)=>Date.parse(a)-Date.parse(b)).at(-1);
+        const query = new URLSearchParams({product:TATHU_ID,mode:'normal',time:new Date(chosen).toISOString(),latest:'false'});
+        const response = await apiJson(`geojson-products/payloads?${query.toString()}`);
+        const geojson = response.payloads && response.payloads[0] && response.payloads[0].geojson;
+        if (!geojson) throw new Error('Sem diagnóstico TATHU para o horário selecionado.');
+        tathuData = geojson;
+        if (map.getSource('tathu-data')) map.getSource('tathu-data').setData(tathuData);
+        installVectorLayers(); applyOverlayVisibility();
+        tathuStatus.textContent = `Ativo · ${fmtLocal(chosen)}`;
+      } catch (error) {
+        tathuStatus.textContent = 'Sem dados para este horário';
+        if (map.getSource('tathu-data')) map.getSource('tathu-data').setData(emptyGeoJSON());
+      }
+    }
+
+    async function refreshLightningCast() {
+      try {
+        if (!lightningCastData) {
+          const response = await apiJson(LIGHTNINGCAST_PATH);
+          lightningCastData = response.payloads && response.payloads[0] && response.payloads[0].geojson;
+        }
+        if (!lightningCastData) throw new Error('O CPTEC não retornou a camada LightningCast.');
+        if (map.getSource('lightningcast-data')) map.getSource('lightningcast-data').setData(lightningCastData);
+        installVectorLayers(); applyOverlayVisibility();
+        const timestamp = lightningCastData.features?.[0]?.properties?.timestamp;
+        lightningStatus.textContent = `Ativo · ${timestamp ? fmtLocal(timestamp) : 'última atualização'}`;
+      } catch (error) {
+        lightningStatus.textContent = 'LightningCast indisponível';
+        lightningCastEnabled = false;
+        setToggleState($('lightningToggle'),false);
+        applyOverlayVisibility();
+      }
+    }
+
+    function setToggleState(button, enabled) {
+      button.classList.toggle('active',enabled);
+      button.setAttribute('aria-pressed',String(enabled));
+    }
+
+    function stopPlayback() {
+      if (playTimer) clearTimeout(playTimer);
+      playTimer = null;
+      playButton.dataset.playing = 'false';
+      playButton.innerHTML = '<i class="ph ph-play"></i>';
+      playButton.setAttribute('aria-label','Reproduzir');
+    }
+
+    function schedulePlayback() {
+      if (playButton.dataset.playing !== 'true') return;
+      const speed = Number($('speedSelect').value) || 1;
+      playTimer = setTimeout(async () => {
+        playTimer = null;
+        const next = frameIndex >= times.length-1 ? 0 : frameIndex+1;
+        await showFrame(next);
+        if (playButton.dataset.playing === 'true') schedulePlayback();
+      }, Math.max(250,1350/speed));
+    }
+
+    function startPlayback() {
+      if (times.length < 2) return;
+      stopPlayback();
+      playButton.dataset.playing = 'true';
+      playButton.innerHTML = '<i class="ph ph-pause"></i>';
+      playButton.setAttribute('aria-label','Pausar');
+      schedulePlayback();
+    }
+
+    function togglePlayback() {
+      if (playButton.dataset.playing === 'true') {
+        playButton.dataset.playing = 'false';
+        stopPlayback();
+        return;
+      }
+      startPlayback();
+    }
+
+    // Controles do painel: mantêm os mesmos componentes e comportamento visual da interface de radar.
+    document.querySelectorAll('[data-panel-tab]').forEach(button => button.addEventListener('click',() => {
+      const panelName = button.dataset.panelTab;
+      document.querySelectorAll('[data-panel-tab]').forEach(tab => {
+        const active = tab === button;
+        tab.classList.toggle('active',active);
+        tab.setAttribute('aria-selected',String(active));
+      });
+      document.querySelectorAll('[data-panel-view]').forEach(view => {
+        const active = view.dataset.panelView === panelName;
+        view.classList.toggle('active',active);
+        view.hidden = !active;
+      });
+      $('drawerTitle').textContent = button.dataset.title || 'Satélite';
+      app.classList.remove('panel-collapsed');
+      $('panelToggle').setAttribute('aria-expanded','true');
+    }));
+
+    $('panelToggle').addEventListener('click',() => {
+      app.classList.toggle('panel-collapsed');
+      $('panelToggle').setAttribute('aria-expanded',String(!app.classList.contains('panel-collapsed')));
+    });
+    $('homeButton').addEventListener('click',() => fitCurrentProduct(true));
+    $('northButton').addEventListener('click',() => map.easeTo({bearing:0,duration:300}));
+    $('fullscreenButton').addEventListener('click',async () => {
+      try { if (!document.fullscreenElement) await app.requestFullscreen(); else await document.exitFullscreen(); }
+      catch (error) { setStatus('error','Tela cheia indisponível','O navegador não permitiu abrir a tela cheia.'); }
+    });
+    $('view2d').addEventListener('click',() => { map.easeTo({pitch:0,bearing:0,duration:350}); $('view2d').classList.add('active'); $('view3d').classList.remove('active'); $('view2d').setAttribute('aria-pressed','true'); $('view3d').setAttribute('aria-pressed','false'); });
+    $('view3d').addEventListener('click',() => { map.easeTo({pitch:42,bearing:-8,duration:400}); $('view3d').classList.add('active'); $('view2d').classList.remove('active'); $('view3d').setAttribute('aria-pressed','true'); $('view2d').setAttribute('aria-pressed','false'); });
+    $('mapTheme').addEventListener('change',event => { styleReady = false; map.setStyle(mapStyle(event.target.value),{diff:false}); });
+    sourceSelect.addEventListener('change',event => setOptionsForGroup(event.target.value));
+    productSelect.addEventListener('change',event => loadProductByLayer(event.target.value,true));
+    slider.addEventListener('input',event => showFrame(Number(event.target.value)));
+    $('prevFrame').addEventListener('click',() => { stopPlayback(); playButton.dataset.playing='false'; showFrame(Math.max(0,frameIndex-1)); });
+    $('nextFrame').addEventListener('click',() => { stopPlayback(); playButton.dataset.playing='false'; showFrame(Math.min(times.length-1,frameIndex+1)); });
+    playButton.addEventListener('click',togglePlayback);
+    $('speedSelect').addEventListener('change',() => { if (playButton.dataset.playing === 'true') { stopPlayback(); startPlayback(); } });
+
+    $('opacityRange').addEventListener('input',event => {
+      opacity = Number(event.target.value)/100;
+      $('opacityValue').textContent = `${event.target.value}%`;
+      applyImageStyle();
+    });
+    $('renderMode').addEventListener('change',event => { resampling = event.target.value; applyImageStyle(); });
+    $('paletteSelect').addEventListener('change',event => {
+      const options = {natural:{saturation:0,contrast:0},vivid:{saturation:0.35,contrast:0.12},muted:{saturation:-0.35,contrast:0},grayscale:{saturation:-1,contrast:0.08}};
+      const profile = options[event.target.value] || options.natural;
+      saturation = profile.saturation; contrast = profile.contrast; applyImageStyle();
+    });
+
+    $('bordersToggle').addEventListener('click',() => {
+      bordersEnabled = !bordersEnabled;
+      setToggleState($('bordersToggle'),bordersEnabled);
+      applyOverlayVisibility();
+    });
+    $('labelsToggle').addEventListener('click',() => {
+      labelsEnabled = !labelsEnabled;
+      setToggleState($('labelsToggle'),labelsEnabled);
+      applyOverlayVisibility();
+    });
+    $('markerToggle').addEventListener('click',async () => {
+      tathuEnabled = !tathuEnabled;
+      setToggleState($('markerToggle'),tathuEnabled);
+      if (tathuEnabled) await refreshTathu(times[frameIndex]);
+      else tathuStatus.textContent = 'Camada opcional · desligada';
+      applyOverlayVisibility();
+    });
+    $('lightningToggle').addEventListener('click',async () => {
+      lightningCastEnabled = !lightningCastEnabled;
+      setToggleState($('lightningToggle'),lightningCastEnabled);
+      if (lightningCastEnabled) await refreshLightningCast();
+      else lightningStatus.textContent = 'Camada opcional · desligada';
+      applyOverlayVisibility();
+    });
+
+    $('downloadRadar').addEventListener('click',() => {
+      try {
+        const canvas = map.getCanvas();
+        const link = document.createElement('a');
+        link.download = `sideral-satelite-${timeCode(times[frameIndex] || new Date().toISOString())}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (error) {
+        setStatus('error','Exportação bloqueada','O navegador bloqueou a captura do mapa. Verifique se as camadas estão sendo servidas pelo proxy do mesmo domínio.');
+      }
+    });
+    $('downloadQuality').addEventListener('change',event => {
+      $('downloadRadar').innerHTML = '<i class="ph ph-download-simple"></i> Baixar PNG';
+      if (event.target.value === 'maximum') setStatus('ok',activeProduct.title,'Para a maior área de captura, maximize a janela antes de exportar.');
+    });
+
+    // Relógios Brasil/UTC.
+    const localClock=$('clockLocal'), utcClock=$('clockUtc');
+    const brClock=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+    const zClock=new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+    const tick=()=>{const now=new Date();localClock.textContent=brClock.format(now);utcClock.textContent=`${zClock.format(now)} UTC`;setTimeout(tick,1000-now.getMilliseconds()+8);};
+    tick();
+
+    map.once('load',async () => {
+      mapReady = true;
+      if (!styleReady) { styleReady = true; installVectorLayers(); }
+      try {
+        setOptionsForGroup('goes19');
+        await loadTimesForProduct(products[0],false);
+      } catch (error) {
+        setStatus('error','Falha ao conectar ao CPTEC/INPE',`${error.message} O serviço de imagens está temporariamente indisponível.`);
+      } finally {
+        loadingScreen?.classList.add('hidden');
+        window.clearTimeout(window.__sideralSatelliteLoadingTimer);
+      }
+    });
+    window.__sideralSatelliteLoadingTimer = setTimeout(() => loadingScreen?.classList.add('hidden'),10000);
+  })();
+  </script>
+</body>
+</html>
