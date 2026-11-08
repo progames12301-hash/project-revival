@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { satelliteProxy } from '@/lib/satellite-proxy';
 
 // Public proxy for Sideral's weather data sources (ported from the original Cloudflare worker).
 // Only GET/HEAD/OPTIONS to whitelisted public-data prefixes; no private data involved.
@@ -144,6 +145,10 @@ async function proxyToBackend(request: Request, url: URL) {
 async function handle({ request }: { request: Request }) {
   const url = new URL(request.url);
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(request) });
+  if (url.pathname.startsWith('/api/cptec/')) {
+    const response = await satelliteProxy(request);
+    if (response) return response;
+  }
   if (!["GET", "HEAD"].includes(request.method)) {
     return json({ error: "Método não permitido." }, 405, corsHeaders(request));
   }

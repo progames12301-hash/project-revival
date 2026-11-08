@@ -1,0 +1,202 @@
+[
+  {
+    "name": "ECMWF IFS / HRES",
+    "family": "ECMWF",
+    "grid": "0,25°",
+    "horizon": "240h · ondas 360h",
+    "description": "Modelo determinístico físico. Grade de coleta 0,25°. Atmosfera até 240h e ondas até 360h nos ciclos 00/12.",
+    "group": "global"
+  },
+  {
+    "name": "ECMWF EPS",
+    "family": "ECMWF",
+    "grid": "0,25°",
+    "horizon": "360h",
+    "description": "Sistema de previsão por conjuntos. Grade 0,25°. Membros, controle, média, dispersão e probabilidades. Até 360h.",
+    "group": "global"
+  },
+  {
+    "name": "ECMWF AIFS Single",
+    "family": "ECMWF",
+    "grid": "0,25°",
+    "horizon": "360h",
+    "description": "Modelo determinístico baseado em inteligência artificial. Grade 0,25°. Até 360h. Operacional desde 25/02/2025.",
+    "group": "global"
+  },
+  {
+    "name": "ECMWF AIFS-ENS",
+    "family": "ECMWF",
+    "grid": "0,25°",
+    "horizon": "360h",
+    "description": "Versão por conjuntos do AIFS, com membros e produtos probabilísticos. Grade 0,25°. Até 360h. Operacional desde 01/07/2025.",
+    "group": "global"
+  },
+  {
+    "name": "ICON Global",
+    "family": "DWD",
+    "grid": "Malha triangular",
+    "horizon": "180h",
+    "description": "Modelo determinístico não hidrostático, com malha triangular icosaédrica nativa. Até 180h.",
+    "group": "global"
+  },
+  {
+    "name": "AICON / ICON AI",
+    "family": "DWD",
+    "grid": "Malha triangular",
+    "horizon": "180h",
+    "description": "Versão de inteligência artificial associada à família ICON. Malha nativa triangular. Até 180h.",
+    "group": "global"
+  },
+  {
+    "name": "GFS / GEV3",
+    "family": "NOAA",
+    "grid": "0,25°",
+    "horizon": "384h",
+    "description": "Modelo determinístico global. Grade 0,25°. Até 384h (16 dias).",
+    "group": "global"
+  },
+  {
+    "name": "AIGFS",
+    "family": "NOAA",
+    "grid": "0,25°",
+    "horizon": "384h",
+    "description": "Modelo global determinístico baseado em IA. Grade 0,25°. Até 384h.",
+    "group": "global"
+  },
+  {
+    "name": "AIGEFS",
+    "family": "NOAA",
+    "grid": "0,25°",
+    "horizon": "384h",
+    "description": "Modelo global de conjunto baseado em IA. Grade 0,25°. Até 384h, com produtos de média, dispersão e membros.",
+    "group": "global"
+  },
+  {
+    "name": "HGEFS",
+    "family": "NOAA",
+    "grid": "0,25°",
+    "horizon": "240h",
+    "description": "Sistema híbrido que combina AIGEFS e GEFS. Grade 0,25°. Até 240h (10 dias).",
+    "group": "global"
+  },
+  {
+    "name": "CMC GDPS",
+    "family": "CMC",
+    "grid": "0,15° · ≈15 km",
+    "horizon": "240h",
+    "description": "Sistema determinístico global, com atmosfera GEM acoplada a oceano e gelo marinho. Grade 0,15° (aproximadamente 15 km). Até 240h.",
+    "group": "global"
+  },
+  {
+    "name": "CMC GEPS",
+    "family": "CMC",
+    "grid": "0,5° · ≈39 km",
+    "horizon": "384h · extensões 936h",
+    "description": "Sistema global por conjuntos. Grade 0,5° (aproximadamente 39 km). Até 384h normalmente, com extensões até 936h em ciclos específicos.",
+    "group": "global"
+  },
+  {
+    "name": "UKMET Global",
+    "family": "UKMET",
+    "grid": "0,10° · ≈10 km",
+    "horizon": "168h",
+    "description": "Modelo determinístico global. Catálogo configurado em 0,10°, aproximadamente 10 km. Horizonte cadastrado de 168h.",
+    "group": "global"
+  },
+  {
+    "name": "SIDERAL MULTIMODELS 0.25",
+    "family": "SIDERAL",
+    "grid": "0,25°",
+    "horizon": "3 membros",
+    "description": "Ensemble multimodelo global desenvolvido pela Sideral, combinando ECMWF IFS, NOAA GFS e DWD ICON, com três membros determinísticos e grade unificada de 0,25°.",
+    "group": "global"
+  },
+  {
+    "name": "SIDERAL WRF Brasil — 21 km",
+    "family": "WRF",
+    "grid": "21 km",
+    "horizon": "",
+    "description": "Modelo numérico de abrangência nacional, desenvolvido para acompanhar a evolução dos principais sistemas meteorológicos sobre o Brasil. Com resolução de 21 km, oferece uma visão ampla dos padrões atmosféricos, auxiliando na análise de frentes frias, massas de ar, áreas de instabilidade e distribuição da precipitação.",
+    "group": "regional"
+  },
+  {
+    "name": "WRF CBR — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Modelo de alta resolução dedicado à análise das condições meteorológicas na região de atuação CBR. Sua grade de 4 km permite maior detalhamento dos sistemas de precipitação, áreas de instabilidade e variações das condições atmosféricas, contribuindo para uma análise regional mais precisa.",
+    "group": "regional"
+  },
+  {
+    "name": "WRF2 CBR — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Segunda configuração do modelo WRF para a região CBR. Atua como uma perspectiva complementar à primeira simulação, permitindo comparar a evolução dos campos meteorológicos e identificar diferenças entre os cenários previstos.",
+    "group": "regional"
+  },
+  {
+    "name": "WRF TARC — 3 km",
+    "family": "WRF",
+    "grid": "3 km",
+    "horizon": "",
+    "description": "Modelo de alta resolução voltado ao acompanhamento detalhado das condições atmosféricas na região TARC. Com resolução de 3 km, proporciona maior representação dos fenômenos de mesoescala, favorecendo a análise de áreas de instabilidade, chuva intensa e evolução de sistemas convectivos.",
+    "group": "regional"
+  },
+  {
+    "name": "WRF2 TARC — 3 km",
+    "family": "WRF",
+    "grid": "3 km",
+    "horizon": "",
+    "description": "Configuração complementar do WRF TARC, desenvolvida com resolução de 3 km. Sua utilização permite avaliar diferentes cenários de evolução atmosférica e ampliar a análise das condições previstas para a região.",
+    "group": "regional"
+  },
+  {
+    "name": "SIDERAL WRF Sudeste — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Modelo regional de alta resolução voltado à previsão das condições meteorológicas no Sudeste do Brasil. Com resolução de 4 km, oferece detalhamento dos sistemas de chuva, instabilidades e variações atmosféricas, auxiliando no acompanhamento de eventos meteorológicos de escala regional.",
+    "group": "regional"
+  },
+  {
+    "name": "SIDERAL WRF2 Sudeste — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Segunda configuração do modelo SIDERAL WRF Sudeste, com resolução de 4 km. Disponibiliza uma perspectiva adicional da evolução atmosférica, permitindo comparar cenários e acompanhar possíveis mudanças na distribuição e intensidade dos fenômenos previstos.",
+    "group": "regional"
+  },
+  {
+    "name": "SIDERAL WRF Sudeste — 5 km",
+    "family": "WRF",
+    "grid": "5 km",
+    "horizon": "",
+    "description": "Modelo regional desenvolvido para representar a evolução dos sistemas meteorológicos sobre o Sudeste brasileiro. Com resolução de 5 km, oferece uma análise regional das condições atmosféricas, incluindo precipitação, temperatura, ventos e áreas de instabilidade.",
+    "group": "regional"
+  },
+  {
+    "name": "SIDERAL WRF2 Sudeste — 5 km",
+    "family": "WRF",
+    "grid": "5 km",
+    "horizon": "",
+    "description": "Configuração complementar do WRF Sudeste de 5 km. A segunda simulação amplia as possibilidades de comparação entre cenários, contribuindo para uma avaliação mais abrangente da previsão meteorológica regional.",
+    "group": "regional"
+  },
+  {
+    "name": "METBR WRF — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Modelo numérico de alta resolução desenvolvido para o acompanhamento das condições meteorológicas no Brasil. Com resolução de 4 km, disponibiliza campos atmosféricos detalhados para análise de precipitação, temperatura, vento e instabilidade, auxiliando na identificação e no acompanhamento de sistemas meteorológicos.",
+    "group": "regional"
+  },
+  {
+    "name": "METBR WRF2 — 4 km",
+    "family": "WRF",
+    "grid": "4 km",
+    "horizon": "",
+    "description": "Segunda configuração do METBR WRF, com resolução de 4 km. Complementa a simulação principal e permite comparar diferentes cenários previstos, oferecendo uma perspectiva adicional sobre a evolução das condições atmosféricas.",
+    "group": "regional"
+  }
+]
