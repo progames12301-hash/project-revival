@@ -144,6 +144,20 @@ export const SERVICES: Service[] = [
     "kind": "json"
   },
   {
+    "id": "cim-wrf-4km",
+    "name": "CIM WRF 4 km",
+    "group": "Modelos regionais",
+    "url": "https://raw.githubusercontent.com/progames12301-hash/sideral-backend/cim-wrf-4km-data/metadata.json",
+    "kind": "json"
+  },
+  {
+    "id": "cim-wrf2-4km",
+    "name": "CIM WRF2 4 km",
+    "group": "Modelos regionais",
+    "url": "https://raw.githubusercontent.com/progames12301-hash/sideral-backend/cim-wrf2-4km-data/metadata.json",
+    "kind": "json"
+  },
+  {
     "id": "cbr-json-data",
     "name": "WRF CBR 4 km",
     "group": "Modelos regionais",
