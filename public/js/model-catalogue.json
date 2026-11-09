@@ -216,19 +216,19 @@
     "group": "regional"
   },
   {
-    "name": "CIM WRF — 4 km",
+    "name": "CIM WRF — 5 km",
     "family": "CIM / WRF",
-    "grid": "4 km",
+    "grid": "5 km",
     "horizon": "F000–F040 · horário",
-    "description": "Modelo regional de mesoescala do CIM, inicializado com ICON e com fallback ECMWF/GFS. Grade de 4 km no mesmo domínio do CIM 8 km: Sul e Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
+    "description": "Modelo regional de mesoescala do CIM, inicializado com ICON e com fallback ECMWF/GFS. Grade de 5 km no mesmo domínio do CIM 8 km: Sul e Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
     "group": "regional"
   },
   {
-    "name": "CIM WRF2 — 4 km",
+    "name": "CIM WRF2 — 5 km",
     "family": "CIM / WRF",
-    "grid": "4 km",
+    "grid": "5 km",
     "horizon": "F000–F040 · horário",
-    "description": "Segunda configuração do CIM, inicializada exclusivamente com ICON e válida para o dia seguinte. Mantém a grade de 4 km e o mesmo domínio do CIM 8 km, cobrindo Sul/Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
+    "description": "Segunda configuração do CIM, inicializada exclusivamente com ICON e válida para o dia seguinte. Mantém a grade de 5 km e o mesmo domínio do CIM 8 km, cobrindo Sul/Sudeste do Brasil, Uruguai, leste do Paraguai e nordeste/centro-leste da Argentina. Produtos horários até F040.",
     "group": "regional"
   }
 ]
